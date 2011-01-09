@@ -21,7 +21,7 @@ setup(
     version='0.1',
     url='http://github.com/rspivak/tinypie',
     license='MIT',
-    description='Syntax-Directed Interpreter for an SQL subset',
+    description='Tree-Based Interpreter for a simple TinyPie language',
     author='Ruslan Spivak',
     author_email='ruslan.spivak@gmail.com',
     packages=find_packages('src'),
