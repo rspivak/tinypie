@@ -33,5 +33,6 @@ setup(
     tinypie = tinypie.interpreter:main
     """,
     classifiers=filter(None, classifiers.split('\n')),
-    long_description=long_description
+    long_description=long_description,
+    extras_require={'test': ['ipdb']}
     )
