@@ -63,9 +63,9 @@ class Lexer(object):
         (r',', tokens.COMMA),
         (r'==', tokens.EQ),
         (r'<', tokens.LT),
-        (r'+', tokens.ADD),
+        (r'\+', tokens.ADD),
         (r'-', tokens.SUB),
-        (r'*', tokens.MUL),
+        (r'\*', tokens.MUL),
         (r'=', tokens.ASSIGN),
         ]
 
