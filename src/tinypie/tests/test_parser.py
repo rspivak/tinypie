@@ -92,3 +92,10 @@ class ParserTestCase(unittest.TestCase):
         """
         parser = self._get_parser(text)
         self.assertTrue(parser.parse() is None)
+
+    def test_assign(self):
+        text = """
+        x = 2
+        """
+        parser = self._get_parser(text)
+        self.assertTrue(parser.parse() is None)

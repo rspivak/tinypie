@@ -137,6 +137,8 @@ class Parser(object):
               self._lookahead_type(1) == tokens.LPAREN
               ):
             self._call()
+        else:
+            self._assign()
 
     def _expr(self):
         """Expression rule.
@@ -186,7 +188,9 @@ class Parser(object):
 
         assign -> ID '=' expr
         """
-        pass
+        self._match(tokens.ID)
+        self._match(tokens.ASSIGN)
+        self._expr()
 
     def _call(self):
         """Call rule.
