@@ -125,6 +125,11 @@ class Parser(object):
             self._expr()
             self._match(tokens.NL)
 
+        elif self._lookahead_type(0) == tokens.RETURN:
+            self._match(tokens.RETURN)
+            self._expr()
+            self._match(tokens.NL)
+
         elif self._lookahead_type(0) == tokens.NL:
             self._match(tokens.NL)
 

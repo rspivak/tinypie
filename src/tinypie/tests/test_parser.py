@@ -76,3 +76,10 @@ class ParserTestCase(unittest.TestCase):
         """
         parser = self._get_parser(text)
         self.assertTrue(parser.parse() is None)
+
+    def test_function_definition_one_liner(self):
+        text = """
+        def foo(x) return 2 * x
+        """
+        parser = self._get_parser(text)
+        self.assertTrue(parser.parse() is None)
