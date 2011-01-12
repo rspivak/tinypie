@@ -133,6 +133,11 @@ class Parser(object):
         elif self._lookahead_type(0) == tokens.NL:
             self._match(tokens.NL)
 
+        elif (self._lookahead_type(0) == tokens.ID and
+              self._lookahead_type(1) == tokens.LPAREN
+              ):
+            self._call()
+
     def _expr(self):
         """Expression rule.
 
@@ -188,7 +193,13 @@ class Parser(object):
 
         call -> ID '(' (expr (',' expr)*)? ')'
         """
-        pass
+        self._match(tokens.ID)
+        self._match(tokens.LPAREN)
+        self._expr()
+        while self._lookahead_type(0) == tokens.COMMA:
+            self._match(tokens.COMMA)
+            self._expr()
+        self._match(tokens.RPAREN)
 
     def _atom(self):
         """Atom rule.
@@ -196,7 +207,7 @@ class Parser(object):
         atom -> ID | INT | STRING | call | '(' expr ')'
         """
         if (self._lookahead_type(0) == tokens.ID and
-              self._lookahead_type(0) == tokens.LPAREN
+              self._lookahead_type(1) == tokens.LPAREN
               ):
             self._call()
 
