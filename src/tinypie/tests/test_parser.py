@@ -37,7 +37,7 @@ class ParserTestCase(unittest.TestCase):
         return parser
 
     def test_function_definition_no_formal_arguments(self):
-        text = """\
+        text = """
         def foo():
             print 5
         .
@@ -46,7 +46,7 @@ class ParserTestCase(unittest.TestCase):
         self.assertTrue(parser.parse() is None)
 
     def test_function_definition_with_arguments(self):
-        text = """\
+        text = """
         def foo(x, y):
             print 5
         .
@@ -55,7 +55,7 @@ class ParserTestCase(unittest.TestCase):
         self.assertTrue(parser.parse() is None)
 
     def test_function_definition_with_multiple_statements(self):
-        text = """\
+        text = """
         def foo(x, y):
             print 5
             print  7
@@ -66,7 +66,7 @@ class ParserTestCase(unittest.TestCase):
 
 
     def test_function_definition_with_nl_statements(self):
-        text = """\
+        text = """
         def foo(x, y):
             print 5
 
