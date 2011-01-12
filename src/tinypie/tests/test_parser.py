@@ -53,3 +53,26 @@ class ParserTestCase(unittest.TestCase):
         """
         parser = self._get_parser(text)
         self.assertTrue(parser.parse() is None)
+
+    def test_function_definition_with_multiple_statements(self):
+        text = """\
+        def foo(x, y):
+            print 5
+            print  7
+        .
+        """
+        parser = self._get_parser(text)
+        self.assertTrue(parser.parse() is None)
+
+
+    def test_function_definition_with_nl_statements(self):
+        text = """\
+        def foo(x, y):
+            print 5
+
+            print  7
+
+        .
+        """
+        parser = self._get_parser(text)
+        self.assertTrue(parser.parse() is None)

@@ -125,6 +125,9 @@ class Parser(object):
             self._expr()
             self._match(tokens.NL)
 
+        elif self._lookahead_type(0) == tokens.NL:
+            self._match(tokens.NL)
+
     def _expr(self):
         """Expression rule.
 
