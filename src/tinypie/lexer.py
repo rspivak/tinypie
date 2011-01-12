@@ -53,6 +53,7 @@ class Lexer(object):
 
     RULES = [
         (r'def', tokens.DEF),
+        (r'\r?\n', tokens.NL),
         (r'print', tokens.PRINT),
         (r'[a-zA-Z_]+\d*', tokens.ID),
         (r'\d+', tokens.INT),
@@ -61,6 +62,7 @@ class Lexer(object):
         (r'\)', tokens.RPAREN),
         (r'\.', tokens.DOT),
         (r',', tokens.COMMA),
+        (r':', tokens.COLON),
         (r'==', tokens.EQ),
         (r'<', tokens.LT),
         (r'\+', tokens.ADD),
@@ -69,7 +71,7 @@ class Lexer(object):
         (r'=', tokens.ASSIGN),
         ]
 
-    IS_WHITESPACE = re.compile(r'\s+').match
+    IS_WHITESPACE = re.compile(r'( |\t)+').match
     IS_COMMENT = re.compile(r'#.*').match
 
     def __init__(self, buffer):

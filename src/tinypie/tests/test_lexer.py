@@ -97,4 +97,10 @@ class LexerTestCase(unittest.TestCase):
         token = self._get_token('=')
         self.assertEquals(token.type, tokens.ASSIGN)
 
+    def test_nl_return(self):
+        token = self._get_token('\r\n')
+        self.assertEquals(token.type, tokens.NL)
 
+    def test_nl(self):
+        token = self._get_token(' \n')
+        self.assertEquals(token.type, tokens.NL)
