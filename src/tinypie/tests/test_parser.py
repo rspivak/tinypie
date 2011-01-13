@@ -139,3 +139,20 @@ class ParserTestCase(unittest.TestCase):
         """
         parser = self._get_parser(text)
         self.assertTrue(parser.parse() is None)
+
+    def test_if_one_liner(self):
+        text = """
+        if i < 5 print i + 'less than 5'
+        """
+        parser = self._get_parser(text)
+        self.assertTrue(parser.parse() is None)
+
+    def test_if_else_one_liner(self):
+        text = """
+        if i < 5 print i + 'less than 5'
+        else print 'no'
+        """
+        parser = self._get_parser(text)
+        self.assertTrue(parser.parse() is None)
+
+

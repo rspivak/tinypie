@@ -49,6 +49,14 @@ class LexerTestCase(unittest.TestCase):
         token = self._get_token('return')
         self.assertEquals(token.type, tokens.RETURN)
 
+    def test_if(self):
+        token = self._get_token('if')
+        self.assertEquals(token.type, tokens.IF)
+
+    def test_else(self):
+        token = self._get_token('else')
+        self.assertEquals(token.type, tokens.ELSE)
+
     def test_while(self):
         token = self._get_token('while')
         self.assertEquals(token.type, tokens.WHILE)

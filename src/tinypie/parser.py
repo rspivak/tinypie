@@ -137,6 +137,14 @@ class Parser(object):
               ):
             self._call()
 
+        elif self._lookahead_type(0) == tokens.IF:
+            self._match(tokens.IF)
+            self._expr()
+            self._slist()
+            if self._lookahead_type(0) == tokens.ELSE:
+                self._match(tokens.ELSE)
+                self._slist()
+
         elif self._lookahead_type(0) == tokens.WHILE:
             self._match(tokens.WHILE)
             self._expr()
