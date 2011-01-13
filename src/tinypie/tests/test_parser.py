@@ -99,3 +99,20 @@ class ParserTestCase(unittest.TestCase):
         """
         parser = self._get_parser(text)
         self.assertTrue(parser.parse() is None)
+
+    def test_while_multiple_statements(self):
+        text = """
+        while x < 10:
+            x = x - 1
+
+        .
+        """
+        parser = self._get_parser(text)
+        self.assertTrue(parser.parse() is None)
+
+    def test_while_one_liner(self):
+        text = """
+        while x < 10 x = x - 1
+        """
+        parser = self._get_parser(text)
+        self.assertTrue(parser.parse() is None)

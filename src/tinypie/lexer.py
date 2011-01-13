@@ -56,6 +56,7 @@ class Lexer(object):
         (r'\r?\n', tokens.NL),
         (r'print', tokens.PRINT),
         (r'return', tokens.RETURN),
+        (r'while', tokens.WHILE),
         (r'[a-zA-Z_]+\d*', tokens.ID),
         (r'\d+', tokens.INT),
         (r"'[^']*'", tokens.STRING),

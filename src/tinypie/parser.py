@@ -98,9 +98,8 @@ class Parser(object):
             self._match(tokens.COLON)
             self._match(tokens.NL)
 
-            while (self._lookahead_type(0) != tokens.DOT and
-                   self._lookahead_type(1) != tokens.NL
-                   ):
+            while not (self._lookahead_type(0) == tokens.DOT and
+                       self._lookahead_type(1) == tokens.NL):
                 self._statement()
 
             self._match(tokens.DOT)
@@ -137,6 +136,12 @@ class Parser(object):
               self._lookahead_type(1) == tokens.LPAREN
               ):
             self._call()
+
+        elif self._lookahead_type(0) == tokens.WHILE:
+            self._match(tokens.WHILE)
+            self._expr()
+            self._slist()
+
         else:
             self._assign()
 

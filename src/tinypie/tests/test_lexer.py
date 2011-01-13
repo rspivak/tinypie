@@ -45,9 +45,13 @@ class LexerTestCase(unittest.TestCase):
         token = self._get_token('print')
         self.assertEquals(token.type, tokens.PRINT)
 
-    def test_print(self):
+    def test_return(self):
         token = self._get_token('return')
         self.assertEquals(token.type, tokens.RETURN)
+
+    def test_while(self):
+        token = self._get_token('while')
+        self.assertEquals(token.type, tokens.WHILE)
 
     def test_id(self):
         token = self._get_token('obj_id')
@@ -108,3 +112,4 @@ class LexerTestCase(unittest.TestCase):
     def test_nl(self):
         token = self._get_token(' \n')
         self.assertEquals(token.type, tokens.NL)
+
