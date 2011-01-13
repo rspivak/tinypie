@@ -116,3 +116,26 @@ class ParserTestCase(unittest.TestCase):
         """
         parser = self._get_parser(text)
         self.assertTrue(parser.parse() is None)
+
+    def test_atom_string(self):
+        text = """
+        x = 'string'
+        """
+        parser = self._get_parser(text)
+        self.assertTrue(parser.parse() is None)
+
+    def test_atom_expression(self):
+        text = """
+        x = (7 + 3) * 5 - 2
+        """
+        parser = self._get_parser(text)
+        self.assertTrue(parser.parse() is None)
+
+    def test_atom_function_call(self):
+        text = """
+        def foo() return 10
+
+        x = (7 + 3) * 5 - foo()
+        """
+        parser = self._get_parser(text)
+        self.assertTrue(parser.parse() is None)
