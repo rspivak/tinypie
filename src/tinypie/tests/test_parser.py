@@ -156,3 +156,168 @@ class ParserTestCase(unittest.TestCase):
         self.assertTrue(parser.parse() is None)
 
 
+class ASTTestCase(unittest.TestCase):
+
+    def _get_parser(self, text):
+        from tinypie.lexer import Lexer
+        from tinypie.parser import Parser
+
+        parser = Parser(Lexer(text))
+        return parser
+
+    def _compare_tree(self, expected_node, node):
+        self.assertEquals(expected_node, node,
+                          'expected: %s - got: %s' % (expected_node, node))
+        self.assertEquals(len(expected_node.children), len(node.children))
+
+        for child1, child2 in zip(expected_node.children, node.children):
+            self._compare_tree(child1, child2)
+
+    def test_function_definition(self):
+        from tinypie.ast import AST
+        from tinypie.lexer import Token
+        from tinypie import tokens
+
+        text = """
+        def foo(x) print x
+        """
+        parser = self._get_parser(text)
+        parser.parse()
+
+        tree = AST(tokens.BLOCK)
+
+        func_node = AST(tokens.FUNC_DEF)
+        func_node.add_child(AST(Token(tokens.ID, 'foo')))
+        func_node.add_child(AST(Token(tokens.ID, 'x')))
+
+        block_node = AST(tokens.BLOCK)
+        print_node = AST(Token(tokens.PRINT, 'print'))
+        print_node.add_child(AST(Token(tokens.ID, 'x')))
+        block_node.add_child(print_node)
+        func_node.add_child(block_node)
+
+        tree.add_child(func_node)
+
+        self._compare_tree(tree, parser.root)
+
+    def test_print(self):
+        from tinypie.ast import AST
+        from tinypie.lexer import Token
+        from tinypie import tokens
+
+        text = """
+        print x
+        """
+        parser = self._get_parser(text)
+        parser.parse()
+
+        tree = AST(tokens.BLOCK)
+        print_node = AST(Token(tokens.PRINT, 'print'))
+        print_node.add_child(AST(Token(tokens.ID, 'x')))
+        tree.add_child(print_node)
+
+        self._compare_tree(tree, parser.root)
+
+    def test_return(self):
+        from tinypie.ast import AST
+        from tinypie.lexer import Token
+        from tinypie import tokens
+
+        text = """
+        return x
+        """
+        parser = self._get_parser(text)
+        parser.parse()
+
+        tree = AST(tokens.BLOCK)
+        return_node = AST(Token(tokens.RETURN, 'return'))
+        return_node.add_child(AST(Token(tokens.ID, 'x')))
+        tree.add_child(return_node)
+
+        self._compare_tree(tree, parser.root)
+
+    def test_call(self):
+        from tinypie.ast import AST
+        from tinypie.lexer import Token
+        from tinypie import tokens
+
+        text = """
+        foo(5)
+        """
+        parser = self._get_parser(text)
+        parser.parse()
+
+        tree = AST(tokens.BLOCK)
+        call_node = AST(Token(tokens.CALL))
+        call_node.add_child(AST(Token(tokens.ID, 'foo')))
+        call_node.add_child(AST(Token(tokens.INT, '5')))
+        tree.add_child(call_node)
+
+        self._compare_tree(tree, parser.root)
+
+    def test_while(self):
+        from tinypie.ast import AST
+        from tinypie.lexer import Token
+        from tinypie import tokens
+
+        text = """
+        while x < 10:
+            print x
+        .
+        """
+        parser = self._get_parser(text)
+        parser.parse()
+
+        tree = AST(tokens.BLOCK)
+        while_node = AST(Token(tokens.WHILE, 'while'))
+
+        lt_node = AST(Token(tokens.LT, '<'))
+        lt_node.add_child(AST(Token(tokens.ID, 'x')))
+        lt_node.add_child(AST(Token(tokens.INT, '10')))
+        while_node.add_child(lt_node)
+
+        block_node = AST(tokens.BLOCK)
+        print_node = AST(Token(tokens.PRINT, 'print'))
+        print_node.add_child(AST(Token(tokens.ID, 'x')))
+        block_node.add_child(print_node)
+        while_node.add_child(block_node)
+
+        tree.add_child(while_node)
+
+        self._compare_tree(tree, parser.root)
+
+    def test_ifstat(self):
+        from tinypie.ast import AST
+        from tinypie.lexer import Token
+        from tinypie import tokens
+
+        text = """
+        if x < 10 print x
+        else print 'less'
+        """
+        parser = self._get_parser(text)
+        parser.parse()
+
+        tree = AST(tokens.BLOCK)
+        ifstat_node = AST(Token(tokens.IF, 'if'))
+
+        lt_node = AST(Token(tokens.LT, '<'))
+        lt_node.add_child(AST(Token(tokens.ID, 'x')))
+        lt_node.add_child(AST(Token(tokens.INT, '10')))
+        ifstat_node.add_child(lt_node)
+
+        block_node = AST(tokens.BLOCK)
+        print_node = AST(Token(tokens.PRINT, 'print'))
+        print_node.add_child(AST(Token(tokens.ID, 'x')))
+        block_node.add_child(print_node)
+        ifstat_node.add_child(block_node)
+
+        block_node = AST(tokens.BLOCK)
+        print_node = AST(Token(tokens.PRINT, 'print'))
+        print_node.add_child(AST(Token(tokens.STRING, "'less'")))
+        block_node.add_child(print_node)
+        ifstat_node.add_child(block_node)
+
+        tree.add_child(ifstat_node)
+
+        self._compare_tree(tree, parser.root)

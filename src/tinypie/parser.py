@@ -25,6 +25,7 @@
 __author__ = 'Ruslan Spivak <ruslan.spivak@gmail.com>'
 
 from tinypie import tokens
+from tinypie.ast import AST
 
 # program             -> (function_definition | statement)+ EOF
 # function_definition -> 'def' ID '(' (ID (',' ID)*)? ')' slist
@@ -58,16 +59,24 @@ class Parser(object):
         self.lookahead_limit = lookahead_limit
         self.pos = 0
         self._init_lookahead()
+        self.root = AST(tokens.BLOCK)
+        self.current_node = self.root
 
     def parse(self):
+        node = AST(tokens.BLOCK)
+
         while self._lookahead_type(0) != tokens.EOF:
 
             token_type = self._lookahead_type(0)
 
             if token_type == tokens.DEF:
-                self._function_definition()
+                node.add_child(self._function_definition())
             else:
-                self._statement()
+                st_node = self._statement()
+                if st_node is not None:
+                    node.add_child(st_node)
+
+        self.root = node
 
     def _function_definition(self):
         """Function definition rule.
@@ -75,18 +84,25 @@ class Parser(object):
         function_definition -> 'def' ID '(' (ID (',' ID)*)? ')' slist
         """
         self._match(tokens.DEF)
+
+        node = AST(tokens.FUNC_DEF)
+        node.add_child(AST(self._lookahead_token(0)))
+
         self._match(tokens.ID)
         self._match(tokens.LPAREN)
 
         if self._lookahead_type(0) == tokens.ID:
+            node.add_child(AST(self._lookahead_token(0)))
             self._match(tokens.ID)
 
             while self._lookahead_type(0) == tokens.COMMA:
                 self._match(tokens.COMMA)
+                node.add_child(AST(self._lookahead_token(0)))
                 self._match(tokens.ID)
 
         self._match(tokens.RPAREN)
-        self._slist()
+        node.add_child(self._slist())
+        return node
 
     def _slist(self):
         """Statement list rule.
@@ -94,19 +110,27 @@ class Parser(object):
         slist -> ':' NL statement+ '.' NL
                  | statement
         """
+        node = AST(tokens.BLOCK)
+
         if self._lookahead_type(0) == tokens.COLON:
             self._match(tokens.COLON)
             self._match(tokens.NL)
 
             while not (self._lookahead_type(0) == tokens.DOT and
                        self._lookahead_type(1) == tokens.NL):
-                self._statement()
+                st_node = self._statement()
+                if st_node is not None:
+                    node.add_child(st_node)
 
             self._match(tokens.DOT)
             self._match(tokens.NL)
 
         else:
-            self._statement()
+            st_node = self._statement()
+            if st_node is not None:
+                node.add_child(st_node)
+
+        return node
 
     def _statement(self):
         """Statement rule.
@@ -120,14 +144,18 @@ class Parser(object):
                      | NL
         """
         if self._lookahead_type(0) == tokens.PRINT:
+            node = AST(self._lookahead_token(0))
             self._match(tokens.PRINT)
-            self._expr()
+            node.add_child(self._expr())
             self._match(tokens.NL)
+            return node
 
         elif self._lookahead_type(0) == tokens.RETURN:
+            node = AST(self._lookahead_token(0))
             self._match(tokens.RETURN)
-            self._expr()
+            node.add_child(self._expr())
             self._match(tokens.NL)
+            return node
 
         elif self._lookahead_type(0) == tokens.NL:
             self._match(tokens.NL)
@@ -135,88 +163,126 @@ class Parser(object):
         elif (self._lookahead_type(0) == tokens.ID and
               self._lookahead_type(1) == tokens.LPAREN
               ):
-            self._call()
+            return self._call()
 
         elif self._lookahead_type(0) == tokens.IF:
+            node = AST(self._lookahead_token(0))
             self._match(tokens.IF)
-            self._expr()
-            self._slist()
+            node.add_child(self._expr())
+            node.add_child(self._slist())
             if self._lookahead_type(0) == tokens.ELSE:
                 self._match(tokens.ELSE)
-                self._slist()
+                node.add_child(self._slist())
+            return node
 
         elif self._lookahead_type(0) == tokens.WHILE:
+            node = AST(self._lookahead_token(0))
             self._match(tokens.WHILE)
-            self._expr()
-            self._slist()
+            node.add_child(self._expr())
+            node.add_child(self._slist())
+            return node
 
         else:
-            self._assign()
+            node = AST(tokens.ASSIGN)
+            node.add_child(self._assign())
+            return node
 
     def _expr(self):
         """Expression rule.
 
         expr -> add_expr (('<' | '==') add_expr)?
         """
-        self._add_expr()
+        left_node = self._add_expr()
 
         if self._lookahead_type(0) == tokens.LT:
+            node = AST(self._lookahead_token(0))
+            node.add_child(left_node)
             self._match(tokens.LT)
-            self._add_expr()
+            node.add_child(self._add_expr())
+            return node
 
         elif self._lookahead_type(0) == tokens.EQ:
+            node = AST(self._lookahead_token(0))
+            node.add_child(left_node)
             self._match(tokens.EQ)
-            self._add_expr()
+            node.add_child(self._add_expr())
+            return node
+
+        return left_node
 
     def _add_expr(self):
         """Add expression rule.
 
         add_expr -> mult_expr (('+' | '-') mult_expr)*
         """
-
-        self._mult_expr()
+        result_node = self._mult_expr()
 
         while self._lookahead_type(0) in (tokens.ADD, tokens.SUB):
             if self._lookahead_type(0) == tokens.ADD:
+                node = AST(self._lookahead_token(0))
+                node.add_child(result_node)
                 self._match(tokens.ADD)
-                self._mult_expr()
+                node.add_child(self._mult_expr())
+                result_node = node
 
             elif self._lookahead_type(0) == tokens.SUB:
+                node = AST(self._lookahead_token(0))
+                node.add_child(result_node)
                 self._match(tokens.SUB)
-                self._mult_expr()
+                node.add_child(self._mult_expr())
+                result_node = node
+
+        return result_node
 
     def _mult_expr(self):
         """Multiply expression rule.
 
         mult_expr -> atom ('*' atom)*
         """
-        self._atom()
+        result_node = self._atom()
 
         while self._lookahead_type(0) == tokens.MUL:
+            node = AST(self._lookahead_token(0))
+            node.add_child(result_node)
             self._match(tokens.MUL)
-            self._atom()
+            node.add_child(self._atom())
+            result_node = node
+
+        return result_node
 
     def _assign(self):
         """Assign rule.
 
         assign -> ID '=' expr
         """
+        node = AST(tokens.ASSIGN)
+        node.add_child(AST(self._lookahead_token(0)))
         self._match(tokens.ID)
         self._match(tokens.ASSIGN)
-        self._expr()
+        node.add_child(self._expr())
+
+        return node
 
     def _call(self):
         """Call rule.
 
         call -> ID '(' (expr (',' expr)*)? ')'
         """
+        node = AST(tokens.CALL)
+        node.add_child(AST(self._lookahead_token(0)))
+
         self._match(tokens.ID)
         self._match(tokens.LPAREN)
-        self._expr()
+        result_node = self._expr()
+        if result_node is not None:
+            node.add_child(result_node)
+
         while self._lookahead_type(0) == tokens.COMMA:
             self._match(tokens.COMMA)
-            self._expr()
+            node.add_child(self._expr())
         self._match(tokens.RPAREN)
+
+        return node
 
     def _atom(self):
         """Atom rule.
@@ -226,21 +292,28 @@ class Parser(object):
         if (self._lookahead_type(0) == tokens.ID and
               self._lookahead_type(1) == tokens.LPAREN
               ):
-            self._call()
+            return self._call()
 
         elif self._lookahead_type(0) == tokens.ID:
+            node = AST(self._lookahead_token(0))
             self._match(tokens.ID)
+            return node
 
         elif self._lookahead_type(0) == tokens.INT:
+            node = AST(self._lookahead_token(0))
             self._match(tokens.INT)
+            return node
 
         elif self._lookahead_type(0) == tokens.STRING:
+            node = AST(self._lookahead_token(0))
             self._match(tokens.STRING)
+            return node
 
         elif self._lookahead_type(0) == tokens.LPAREN:
             self._match(tokens.LPAREN)
-            self._expr()
+            node = self._expr()
             self._match(tokens.RPAREN)
+            return node
 
     # Helper methods
     def _init_lookahead(self):

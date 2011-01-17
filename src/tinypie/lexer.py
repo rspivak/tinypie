@@ -31,12 +31,15 @@ from tinypie import tokens
 
 class Token(object):
 
-    def __init__(self, type, text):
+    def __init__(self, type, text=''):
         self.type = type
         self.text = text
 
     def __str__(self):
         return "<'{text}', {name}>".format(text=self.text, name=self.type)
+
+    def __eq__(self, other):
+        return self.type == other.type and self.text == other.text
 
 
 class LexerException(Exception):

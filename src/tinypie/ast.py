@@ -24,29 +24,50 @@
 
 __author__ = 'Ruslan Spivak <ruslan.spivak@gmail.com>'
 
+from tinypie.lexer import Token
 
-DEF = 'DEF'
-BLOCK = 'BLOCK'
-FUNC_DEF = 'FUNC_DEF'
-CALL = 'CALL'
-NL = 'NL'
-PRINT = 'PRINT'
-RETURN = 'RETURN'
-IF = 'IF'
-ELSE = 'ELSE'
-WHILE = 'WHILE'
-ID = 'ID'
-INT = 'INT'
-STRING = 'STRING'
-LPAREN = 'LPAREN'
-RPAREN = 'RPAREN'
-DOT = 'DOT'
-COMMA = 'COMMA'
-COLON = 'COLON'
-EQ = 'EQ'
-LT = 'LT'
-ADD = 'ADD'
-SUB = 'SUB'
-MUL = 'MUL'
-ASSIGN = 'ASSIGN'
-EOF = 'EOF'
+
+class AST(object):
+
+    def __init__(self, token=None):
+        self.token = token if isinstance(token, Token) else Token(token)
+        self.children = []
+
+    @property
+    def node_type(self):
+        return self.token.type
+
+    def add_child(self, child):
+        self.children.append(child)
+
+    def is_null(self):
+        return self.token is None
+
+    def __str__(self):
+        return str(self.token) if self.token is not None else 'null'
+
+    def to_string_tree(self):
+        if not self.children:
+            return str(self)
+
+        result = []
+        if not self.is_null():
+            result.append('(')
+            result.append(str(self))
+            result.append(' ')
+
+        for index, child in enumerate(self.children):
+            if index > 0:
+                result.append(' ')
+            result.append(child.to_string_tree())
+
+        if not self.is_null():
+            result.append(')')
+
+        return ''.join(result)
+
+    def __eq__(self, other):
+        return self.token == other.token
+
+
+
