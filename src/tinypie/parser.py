@@ -194,19 +194,12 @@ class Parser(object):
         """
         left_node = self._add_expr()
 
-        if self._lookahead_type(0) == tokens.LT:
+        if self._lookahead_type(0) in (tokens.LT, tokens.EQ):
             node = AST(self._lookahead_token(0))
             node.add_child(left_node)
-            self._match(tokens.LT)
+            self._match(self._lookahead_type(0))
             node.add_child(self._add_expr())
-            return node
-
-        elif self._lookahead_type(0) == tokens.EQ:
-            node = AST(self._lookahead_token(0))
-            node.add_child(left_node)
-            self._match(tokens.EQ)
-            node.add_child(self._add_expr())
-            return node
+            left_node = node
 
         return left_node
 
@@ -215,24 +208,16 @@ class Parser(object):
 
         add_expr -> mult_expr (('+' | '-') mult_expr)*
         """
-        result_node = self._mult_expr()
+        left_node = self._mult_expr()
 
         while self._lookahead_type(0) in (tokens.ADD, tokens.SUB):
-            if self._lookahead_type(0) == tokens.ADD:
-                node = AST(self._lookahead_token(0))
-                node.add_child(result_node)
-                self._match(tokens.ADD)
-                node.add_child(self._mult_expr())
-                result_node = node
+            node = AST(self._lookahead_token(0))
+            node.add_child(left_node)
+            self._match(self._lookahead_type(0))
+            node.add_child(self._mult_expr())
+            left_node = node
 
-            elif self._lookahead_type(0) == tokens.SUB:
-                node = AST(self._lookahead_token(0))
-                node.add_child(result_node)
-                self._match(tokens.SUB)
-                node.add_child(self._mult_expr())
-                result_node = node
-
-        return result_node
+        return left_node
 
     def _mult_expr(self):
         """Multiply expression rule.
