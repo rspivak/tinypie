@@ -68,6 +68,3 @@ class AST(object):
 
     def __eq__(self, other):
         return self.token == other.token
-
-
-

@@ -64,7 +64,6 @@ class ParserTestCase(unittest.TestCase):
         parser = self._get_parser(text)
         self.assertTrue(parser.parse() is None)
 
-
     def test_function_definition_with_nl_statements(self):
         text = """
         def foo(x, y):

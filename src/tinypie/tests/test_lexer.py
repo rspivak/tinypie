@@ -120,4 +120,3 @@ class LexerTestCase(unittest.TestCase):
     def test_nl(self):
         token = self._get_token(' \n')
         self.assertEquals(token.type, tokens.NL)
-
