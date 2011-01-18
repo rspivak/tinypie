@@ -47,7 +47,10 @@ class MemorySpace(object):
 
 
 class FunctionSpace(MemorySpace):
-    pass
+
+    def __init__(self, func_symbol):
+        super(FunctionSpace, self).__init__(func_symbol.name)
+        self.func_symbol = func_symbol
 
 
 class ReturnValue(Exception):
@@ -79,7 +82,7 @@ class Interpreter(object):
             self._ret(node)
 
         elif node.type == tokens.CALL:
-            self._call(node)
+            return self._call(node)
 
         elif node.type == tokens.ASSIGN:
             self._assign(node)
@@ -116,6 +119,29 @@ class Interpreter(object):
     def _print(self, node):
         value = self._exec(node.children[0])
         print value
+
+    def _call(self, node):
+        func_name = node.children[0].text
+        func_symbol = node.scope.resolve(func_name)
+        func_space = FunctionSpace(func_symbol)
+        self.func_stack.append(func_space)
+        save_space = self.current_space
+        self.current_space = func_space
+
+        for index, arg in enumerate(func_symbol.formal_args):
+            name = arg.name
+            value = self._exec(node.children[index + 1])
+            self.current_space.put(name, value)
+
+        try:
+            self._exec(func_symbol.block_ast)
+        except ReturnValue as rv:
+            value = rv.value
+
+        self.func_stack.pop()
+        self.current_space = save_space
+
+        return value
 
     def _load(self, node):
         name = node.text

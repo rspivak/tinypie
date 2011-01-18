@@ -73,4 +73,16 @@ class InterpreterTestCase(unittest.TestCase):
             """)
         self.assertEquals(output.getvalue().strip(), '5')
 
+    def test_function_call(self):
+        interp = self._get_interpreter()
+        with redirected_output() as output:
+            interp.interpret("""
+            def foo(x):
+                print x
+            .
+
+            foo(15)
+            """)
+        self.assertEquals(output.getvalue().strip(), '15')
+
 

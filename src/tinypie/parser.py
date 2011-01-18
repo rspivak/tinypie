@@ -289,6 +289,7 @@ class Parser(object):
         call -> ID '(' (expr (',' expr)*)? ')'
         """
         node = AST(tokens.CALL)
+        node.scope = self.current_scope
         node.add_child(AST(self._lookahead_token(0)))
 
         self._match(tokens.ID)
