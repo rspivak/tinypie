@@ -24,51 +24,52 @@
 
 __author__ = 'Ruslan Spivak <ruslan.spivak@gmail.com>'
 
-from tinypie.lexer import Token
+from tinypie.scope import Scope
+
+class Symbol(object):
+
+    def __init__(self, name):
+        self.name = name
+        self.scope = None
 
 
-class AST(object):
+class VariableSymbol(Symbol):
+    pass
 
-    def __init__(self, token=None):
-        self.token = token if isinstance(token, Token) else Token(token)
-        self.children = []
+
+class ScopedSymbol(Scope, Symbol):
+
+    def __init__(self, name, enclosing_scope):
+        super(ScopedSymbol, self).__init__(name)
+        self.enclosing_scope = enclosing_scope
+
+
+class FunctionSymbol(ScopedSymbol):
+
+    def __init__(self, name, enclosing_scope):
+        super(FunctionSymbol, self).__init__(name, enclosing_scope)
+        # self.formal_args = None
+        self.block_ast = None
+        self.symbols = {}
+        self.ordered_symbols = []
 
     @property
-    def type(self):
-        return self.token.type
+    def formal_args(self):
+        return self.ordered_symbols
 
-    @property
-    def text(self):
-        return self.token.text
+    def get_enclosing_scope(self):
+        return self.enclosing_scope
 
-    def add_child(self, child):
-        self.children.append(child)
+    def define(self, symbol):
+        self.symbols[symbol.name] = symbol
+        symbol.scope = self
+        self.ordered_symbols.append(symbol)
 
-    def is_null(self):
-        return self.token is None
+    def resolve(self, name):
+        symbol = self.symbols.get(name)
+        if symbol is not None:
+            return symbol
 
-    def __str__(self):
-        return 'AST %s' % str(self.token) if self.token is not None else 'null'
+        if self.get_enclosing_scope() is not None:
+            return self.get_enclosing_scope().resolve(name)
 
-    def to_string_tree(self):
-        if not self.children:
-            return str(self)
-
-        result = []
-        if not self.is_null():
-            result.append('(')
-            result.append(str(self))
-            result.append(' ')
-
-        for index, child in enumerate(self.children):
-            if index > 0:
-                result.append(' ')
-            result.append(child.to_string_tree())
-
-        if not self.is_null():
-            result.append(')')
-
-        return ''.join(result)
-
-    def __eq__(self, other):
-        return self.token == other.token

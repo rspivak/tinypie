@@ -32,8 +32,11 @@ class ParserTestCase(unittest.TestCase):
     def _get_parser(self, text):
         from tinypie.lexer import Lexer
         from tinypie.parser import Parser
+        from tinypie.scope import GlobalScope
+        class Interpreter(object):
+            global_scope = GlobalScope()
 
-        parser = Parser(Lexer(text))
+        parser = Parser(Lexer(text), interpreter=Interpreter())
         return parser
 
     def test_function_definition_no_formal_arguments(self):
@@ -160,8 +163,11 @@ class ASTTestCase(unittest.TestCase):
     def _get_parser(self, text):
         from tinypie.lexer import Lexer
         from tinypie.parser import Parser
+        from tinypie.scope import GlobalScope
+        class Interpreter(object):
+            global_scope = GlobalScope()
 
-        parser = Parser(Lexer(text))
+        parser = Parser(Lexer(text), interpreter=Interpreter())
         return parser
 
     def _compare_tree(self, expected_node, node):

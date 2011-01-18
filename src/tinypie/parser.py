@@ -26,6 +26,8 @@ __author__ = 'Ruslan Spivak <ruslan.spivak@gmail.com>'
 
 from tinypie import tokens
 from tinypie.ast import AST
+from tinypie.scope import LocalScope
+from tinypie.symbol import VariableSymbol, FunctionSymbol
 
 # program             -> (function_definition | statement)+ EOF
 # function_definition -> 'def' ID '(' (ID (',' ID)*)? ')' slist
@@ -53,7 +55,7 @@ class ParserException(Exception):
 class Parser(object):
     """TinyPie Parser"""
 
-    def __init__(self, lexer, lookahead_limit=2):
+    def __init__(self, lexer, lookahead_limit=2, interpreter=None):
         self.lexer = lexer
         self.lookahead = [None] * lookahead_limit
         self.lookahead_limit = lookahead_limit
@@ -61,6 +63,8 @@ class Parser(object):
         self._init_lookahead()
         self.root = AST(tokens.BLOCK)
         self.current_node = self.root
+        self.interpreter = interpreter
+        self.current_scope = interpreter.global_scope
 
     def parse(self):
         node = AST(tokens.BLOCK)
@@ -86,22 +90,50 @@ class Parser(object):
         self._match(tokens.DEF)
 
         node = AST(tokens.FUNC_DEF)
-        node.add_child(AST(self._lookahead_token(0)))
+        id_token = self._lookahead_token(0)
+        node.add_child(AST(id_token))
+
+        func_symbol = FunctionSymbol(id_token.text, self.current_scope)
+        func_symbol.scope = self.current_scope
+        self.current_scope.define(func_symbol)
+        self.current_scope = func_symbol
 
         self._match(tokens.ID)
         self._match(tokens.LPAREN)
 
         if self._lookahead_type(0) == tokens.ID:
             node.add_child(AST(self._lookahead_token(0)))
+
+            variable_symbol = VariableSymbol(self._lookahead_token(0).text)
+            variable_symbol.scope = self.current_scope
+            self.current_scope.define(variable_symbol)
+
             self._match(tokens.ID)
 
             while self._lookahead_type(0) == tokens.COMMA:
                 self._match(tokens.COMMA)
                 node.add_child(AST(self._lookahead_token(0)))
+
+                variable_symbol = VariableSymbol(self._lookahead_token(0).text)
+                self.current_scope.define(variable_symbol)
+                variable_symbol.scope = self.current_scope
+
                 self._match(tokens.ID)
 
         self._match(tokens.RPAREN)
-        node.add_child(self._slist())
+
+        self.current_scope = LocalScope(self.current_scope)
+
+        block_ast = self._slist()
+        func_symbol.block_ast = block_ast
+        node.add_child(block_ast)
+
+        # pop LocalScope
+        self.current_scope = self.current_scope.get_enclosing_scope()
+
+        # pop FunctionSymbol
+        self.current_scope = self.current_scope.get_enclosing_scope()
+
         return node
 
     def _slist(self):
@@ -242,6 +274,11 @@ class Parser(object):
         """
         node = AST(tokens.ASSIGN)
         node.add_child(AST(self._lookahead_token(0)))
+
+        variable_symbol = VariableSymbol(self._lookahead_token(0).text)
+        variable_symbol.scope = self.current_scope
+        self.current_scope.define(variable_symbol)
+
         self._match(tokens.ID)
         self._match(tokens.ASSIGN)
         node.add_child(self._expr())
