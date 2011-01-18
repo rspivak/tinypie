@@ -215,9 +215,7 @@ class Parser(object):
             return node
 
         else:
-            node = AST(tokens.ASSIGN)
-            node.add_child(self._assign())
-            return node
+            return self._assign()
 
     def _expr(self):
         """Expression rule.

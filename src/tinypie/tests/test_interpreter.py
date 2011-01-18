@@ -24,51 +24,53 @@
 
 __author__ = 'Ruslan Spivak <ruslan.spivak@gmail.com>'
 
-from tinypie.lexer import Token
+import sys
+import unittest
+import StringIO
+
+from contextlib import contextmanager
+
+@contextmanager
+def redirected_output():
+    old = sys.stdout
+    out = StringIO.StringIO()
+    sys.stdout = out
+    try:
+        yield out
+    finally:
+        sys.stdout = old
 
 
-class AST(object):
+class InterpreterTestCase(unittest.TestCase):
 
-    def __init__(self, token=None):
-        self.token = token if isinstance(token, Token) else Token(token)
-        self.children = []
+    def _get_interpreter(self):
+        from tinypie.interpreter import Interpreter
+        interp = Interpreter()
+        return interp
 
-    @property
-    def type(self):
-        return self.token.type
+    def test_print_integer(self):
+        interp = self._get_interpreter()
+        with redirected_output() as output:
+            interp.interpret("""
+            print 5
+            """)
+        self.assertEquals(output.getvalue().strip(), '5')
 
-    @property
-    def text(self):
-        return self.token.text
+    def test_print_string(self):
+        interp = self._get_interpreter()
+        with redirected_output() as output:
+            interp.interpret("""
+            print 'string'
+            """)
+        self.assertEquals(output.getvalue().strip(), "'string'")
 
-    def add_child(self, child):
-        self.children.append(child)
+    def test_assign(self):
+        interp = self._get_interpreter()
+        with redirected_output() as output:
+            interp.interpret("""
+            x = 5
+            print x
+            """)
+        self.assertEquals(output.getvalue().strip(), '5')
 
-    def is_null(self):
-        return self.token is None
 
-    def __str__(self):
-        return str(self.token) if self.token is not None else 'null'
-
-    def to_string_tree(self):
-        if not self.children:
-            return str(self)
-
-        result = []
-        if not self.is_null():
-            result.append('(')
-            result.append(str(self))
-            result.append(' ')
-
-        for index, child in enumerate(self.children):
-            if index > 0:
-                result.append(' ')
-            result.append(child.to_string_tree())
-
-        if not self.is_null():
-            result.append(')')
-
-        return ''.join(result)
-
-    def __eq__(self, other):
-        return self.token == other.token
