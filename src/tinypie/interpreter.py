@@ -24,6 +24,8 @@
 
 __author__ = 'Ruslan Spivak <ruslan.spivak@gmail.com>'
 
+import sys
+
 from tinypie.lexer import Lexer
 from tinypie.parser import Parser
 from tinypie.scope import GlobalScope
@@ -215,4 +217,10 @@ class Interpreter(object):
 
 
 def main():
-    pass
+    if len(sys.argv) != 2:
+        print 'Usage: tinypie input_file'
+        sys.exit(1)
+
+    interp = Interpreter()
+    text = open(sys.argv[1]).read()
+    interp.interpret(text)
