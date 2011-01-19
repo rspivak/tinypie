@@ -136,12 +136,10 @@ class Interpreter(object):
         try:
             self._exec(func_symbol.block_ast)
         except ReturnValue as rv:
-            value = rv.value
-
-        self.func_stack.pop()
-        self.current_space = save_space
-
-        return value
+            return rv.value
+        finally:
+            self.func_stack.pop()
+            self.current_space = save_space
 
     def _load(self, node):
         name = node.text
