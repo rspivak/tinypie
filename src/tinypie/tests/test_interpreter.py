@@ -192,3 +192,16 @@ class InterpreterTestCase(unittest.TestCase):
             print y
             """)
         self.assertEquals(output.getvalue().strip(), '16')
+
+    def test_recursive_factorial(self):
+        interp = self._get_interpreter()
+        with redirected_output() as output:
+            interp.interpret("""
+            def factorial(x):
+                if x < 2 return 1
+                return x * factorial(x - 1)
+            .
+
+            print factorial(5)
+            """)
+        self.assertEquals(output.getvalue().strip(), '120')

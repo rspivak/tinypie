@@ -106,7 +106,7 @@ class Interpreter(object):
             return self._compare(node)
 
         elif node.type == tokens.IF:
-            return self._ifstat(node)
+            self._ifstat(node)
 
         elif node.type == tokens.WHILE:
             self._whileop(node)
@@ -136,7 +136,6 @@ class Interpreter(object):
         func_name = node.children[0].text
         func_symbol = node.scope.resolve(func_name)
         func_space = FunctionSpace(func_symbol)
-        self.func_stack.append(func_space)
         save_space = self.current_space
         self.current_space = func_space
 
@@ -144,6 +143,9 @@ class Interpreter(object):
             name = arg.name
             value = self._exec(node.children[index + 1])
             self.current_space.put(name, value)
+
+        # push local scope
+        self.func_stack.append(func_space)
 
         try:
             self._exec(func_symbol.block_ast)
@@ -189,10 +191,10 @@ class Interpreter(object):
         cond_else = node.children[2] if len(node.children) == 3 else None
 
         if self._exec(cond_predicate):
-            return self._exec(cond_consequent)
+            self._exec(cond_consequent)
 
         elif cond_else is not None:
-            return self._exec(cond_else)
+            self._exec(cond_else)
 
     def _whileop(self, node):
         cond_start = node.children[0]
