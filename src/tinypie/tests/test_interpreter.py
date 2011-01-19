@@ -98,6 +98,29 @@ class InterpreterTestCase(unittest.TestCase):
             """)
         self.assertEquals(output.getvalue().strip(), '3')
 
+    def test_function_call_multiple_func_statements(self):
+        interp = self._get_interpreter()
+        with redirected_output() as output:
+            interp.interpret("""
+            def foo(x, y):
+                z = x + y
+                return z
+            .
+
+            print foo(3, 7)
+            """)
+        self.assertEquals(output.getvalue().strip(), '10')
+
+    def test_function_call_one_liner(self):
+        interp = self._get_interpreter()
+        with redirected_output() as output:
+            interp.interpret("""
+            def foo(x) return x * x
+
+            print foo(3) + 2 * (7 - 2)
+            """)
+        self.assertEquals(output.getvalue().strip(), '19')
+
     def test_add_expr(self):
         interp = self._get_interpreter()
         with redirected_output() as output:
@@ -124,5 +147,3 @@ class InterpreterTestCase(unittest.TestCase):
             print x * 3
             """)
         self.assertEquals(output.getvalue().strip(), '21')
-
-
