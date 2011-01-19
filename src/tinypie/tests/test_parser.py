@@ -319,7 +319,7 @@ class ASTTestCase(unittest.TestCase):
 
         block_node = AST(tokens.BLOCK)
         print_node = AST(Token(tokens.PRINT, 'print'))
-        print_node.add_child(AST(Token(tokens.STRING, "'less'")))
+        print_node.add_child(AST(Token(tokens.STRING, 'less')))
         block_node.add_child(print_node)
         ifstat_node.add_child(block_node)
 

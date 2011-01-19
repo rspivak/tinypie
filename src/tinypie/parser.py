@@ -326,7 +326,10 @@ class Parser(object):
             return node
 
         elif self._lookahead_type(0) == tokens.STRING:
-            node = AST(self._lookahead_token(0))
+            # strip single quote around the string
+            token = self._lookahead_token(0)
+            token.text = token.text.strip("'")
+            node = AST(token)
             self._match(tokens.STRING)
             return node
 

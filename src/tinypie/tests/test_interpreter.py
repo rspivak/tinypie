@@ -62,7 +62,7 @@ class InterpreterTestCase(unittest.TestCase):
             interp.interpret("""
             print 'string'
             """)
-        self.assertEquals(output.getvalue().strip(), "'string'")
+        self.assertEquals(output.getvalue().strip(), 'string')
 
     def test_assign(self):
         interp = self._get_interpreter()
