@@ -30,6 +30,7 @@ import StringIO
 
 from contextlib import contextmanager
 
+
 @contextmanager
 def redirected_output():
     old = sys.stdout
@@ -175,3 +176,19 @@ class InterpreterTestCase(unittest.TestCase):
             else print 'No'
             """)
         self.assertEquals(output.getvalue().strip(), 'Yes')
+
+    def test_while_op(self):
+        interp = self._get_interpreter()
+        with redirected_output() as output:
+            interp.interpret("""
+            x = 0
+            y = 10
+            def double(x) return 2 * x
+
+            while x < 3:
+                y = y + double(x)
+                x = x + 1
+            .
+            print y
+            """)
+        self.assertEquals(output.getvalue().strip(), '16')

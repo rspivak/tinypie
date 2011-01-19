@@ -108,6 +108,9 @@ class Interpreter(object):
         elif node.type == tokens.IF:
             return self._ifstat(node)
 
+        elif node.type == tokens.WHILE:
+            self._whileop(node)
+
     def _block(self, node):
         for child in node.children:
             self._exec(child)
@@ -190,6 +193,14 @@ class Interpreter(object):
 
         elif cond_else is not None:
             return self._exec(cond_else)
+
+    def _whileop(self, node):
+        cond_start = node.children[0]
+        code_start = node.children[1]
+        cond = self._exec(cond_start)
+        while cond:
+            self._exec(code_start)
+            cond = self._exec(cond_start)
 
     def _get_symbol_space(self, name):
         if self.func_stack and name in self.func_stack[-1]:
