@@ -215,3 +215,33 @@ class InterpreterTestCase(unittest.TestCase):
             def double(x) return 2 * x
             """)
         self.assertEquals(output.getvalue().strip(), '10')
+
+    def test_global_space_lookup(self):
+        interp = self._get_interpreter()
+        with redirected_output() as output:
+            interp.interpret("""
+            x = 1
+
+            def foo():
+                x = 3
+            .
+
+            foo()
+            print x
+            """)
+        self.assertEquals(output.getvalue().strip(), '3')
+
+    def test_function_local_space_lookup(self):
+        interp = self._get_interpreter()
+        with redirected_output() as output:
+            interp.interpret("""
+            x = 1       # global variable
+
+            def foo(x): # parameter
+                x = 3   # modify x in function space
+            .
+
+            foo(5)
+            print x     # prints 1 (global space)
+            """)
+        self.assertEquals(output.getvalue().strip(), '1')
