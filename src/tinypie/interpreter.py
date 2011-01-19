@@ -102,6 +102,9 @@ class Interpreter(object):
         elif node.type in (tokens.ADD, tokens.SUB, tokens.MUL):
             return self._binop(node)
 
+        elif node.type in (tokens.LT, tokens.EQ):
+            return self._compare(node)
+
     def _block(self, node):
         for child in node.children:
             self._exec(child)
@@ -156,6 +159,16 @@ class Interpreter(object):
 
         if node.type == tokens.MUL:
             return left * right
+
+    def _compare(self, node):
+        left = self._exec(node.children[0])
+        right = self._exec(node.children[1])
+
+        if node.type == tokens.LT:
+            return left < right
+
+        if node.type == tokens.EQ:
+            return left == right
 
     def _load(self, node):
         name = node.text
