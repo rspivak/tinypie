@@ -147,3 +147,31 @@ class InterpreterTestCase(unittest.TestCase):
             print x * 3
             """)
         self.assertEquals(output.getvalue().strip(), '21')
+
+    def test_if_statement_oneliner(self):
+        interp = self._get_interpreter()
+        with redirected_output() as output:
+            interp.interpret("""
+            x = 1
+            if x < 10 print x
+            """)
+        self.assertEquals(output.getvalue().strip(), '1')
+
+    def test_if_else_statement_oneliner(self):
+        interp = self._get_interpreter()
+        with redirected_output() as output:
+            interp.interpret("""
+            x = 10
+            if x < 10 print x
+            else print 'No'
+            """)
+        self.assertEquals(output.getvalue().strip(), 'No')
+
+    def test_compare_equal(self):
+        interp = self._get_interpreter()
+        with redirected_output() as output:
+            interp.interpret("""
+            if 5 + 5 == 10 print 'Yes'
+            else print 'No'
+            """)
+        self.assertEquals(output.getvalue().strip(), 'Yes')

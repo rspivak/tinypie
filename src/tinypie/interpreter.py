@@ -105,6 +105,9 @@ class Interpreter(object):
         elif node.type in (tokens.LT, tokens.EQ):
             return self._compare(node)
 
+        elif node.type == tokens.IF:
+            return self._ifstat(node)
+
     def _block(self, node):
         for child in node.children:
             self._exec(child)
@@ -176,6 +179,17 @@ class Interpreter(object):
         if memory_space is not None:
             return memory_space.get(name)
         return None
+
+    def _ifstat(self, node):
+        cond_predicate = node.children[0]
+        cond_consequent = node.children[1]
+        cond_else = node.children[2] if len(node.children) == 3 else None
+
+        if self._exec(cond_predicate):
+            return self._exec(cond_consequent)
+
+        elif cond_else is not None:
+            return self._exec(cond_else)
 
     def _get_symbol_space(self, name):
         if self.func_stack and name in self.func_stack[-1]:
