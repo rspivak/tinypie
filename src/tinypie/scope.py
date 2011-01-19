@@ -28,13 +28,13 @@ __author__ = 'Ruslan Spivak <ruslan.spivak@gmail.com>'
 class Scope(object):
 
     def get_enclosing_scope(self):
-        raise NotImplemented
+        raise NotImplementedError
 
     def define(self, symbol):
-        raise NotImplemented
+        raise NotImplementedError
 
     def resolve(self, name):
-        raise NotImplemented
+        raise NotImplementedError
 
 
 class BaseScope(Scope):
@@ -74,4 +74,3 @@ class GlobalScope(BaseScope):
     @property
     def name(self):
         return 'global'
-

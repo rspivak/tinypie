@@ -26,6 +26,7 @@ __author__ = 'Ruslan Spivak <ruslan.spivak@gmail.com>'
 
 from tinypie.scope import Scope
 
+
 class Symbol(object):
 
     def __init__(self, name):
@@ -72,4 +73,3 @@ class FunctionSymbol(ScopedSymbol):
 
         if self.get_enclosing_scope() is not None:
             return self.get_enclosing_scope().resolve(name)
-

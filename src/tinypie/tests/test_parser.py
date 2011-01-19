@@ -33,6 +33,7 @@ class ParserTestCase(unittest.TestCase):
         from tinypie.lexer import Lexer
         from tinypie.parser import Parser
         from tinypie.scope import GlobalScope
+
         class Interpreter(object):
             global_scope = GlobalScope()
 
@@ -164,6 +165,7 @@ class ASTTestCase(unittest.TestCase):
         from tinypie.lexer import Lexer
         from tinypie.parser import Parser
         from tinypie.scope import GlobalScope
+
         class Interpreter(object):
             global_scope = GlobalScope()
 
