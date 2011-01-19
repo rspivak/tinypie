@@ -99,6 +99,9 @@ class Interpreter(object):
         elif node.type == tokens.ID:
             return self._load(node)
 
+        elif node.type in (tokens.ADD, tokens.SUB, tokens.MUL):
+            return self._binop(node)
+
     def _block(self, node):
         for child in node.children:
             self._exec(child)
@@ -140,6 +143,19 @@ class Interpreter(object):
         finally:
             self.func_stack.pop()
             self.current_space = save_space
+
+    def _binop(self, node):
+        left = self._exec(node.children[0])
+        right = self._exec(node.children[1])
+
+        if node.type == tokens.ADD:
+            return left + right
+
+        if node.type == tokens.SUB:
+            return left - right
+
+        if node.type == tokens.MUL:
+            return left * right
 
     def _load(self, node):
         name = node.text

@@ -98,4 +98,31 @@ class InterpreterTestCase(unittest.TestCase):
             """)
         self.assertEquals(output.getvalue().strip(), '3')
 
+    def test_add_expr(self):
+        interp = self._get_interpreter()
+        with redirected_output() as output:
+            interp.interpret("""
+            x = 7
+            print x + 3
+            """)
+        self.assertEquals(output.getvalue().strip(), '10')
+
+    def test_sub_expr(self):
+        interp = self._get_interpreter()
+        with redirected_output() as output:
+            interp.interpret("""
+            x = 7
+            print x - 3
+            """)
+        self.assertEquals(output.getvalue().strip(), '4')
+
+    def test_mul_expr(self):
+        interp = self._get_interpreter()
+        with redirected_output() as output:
+            interp.interpret("""
+            x = 7
+            print x * 3
+            """)
+        self.assertEquals(output.getvalue().strip(), '21')
+
 
