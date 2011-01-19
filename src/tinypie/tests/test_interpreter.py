@@ -205,3 +205,13 @@ class InterpreterTestCase(unittest.TestCase):
             print factorial(5)
             """)
         self.assertEquals(output.getvalue().strip(), '120')
+
+    def test_forward_reference(self):
+        interp = self._get_interpreter()
+        with redirected_output() as output:
+            interp.interpret("""
+            print double(5)
+
+            def double(x) return 2 * x
+            """)
+        self.assertEquals(output.getvalue().strip(), '10')
