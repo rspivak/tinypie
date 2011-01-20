@@ -116,6 +116,27 @@ Language grammar
     call                -> ID '(' (expr (',' expr)*)? ')'
 
 
+AST Examples
+------------
+
+Trees in these examples are represented as S-expressions for tersness.
+
+Function call:
+
+    foo(5, 7)
+
+    (CALL ID INT INT) means CALL is the root
+    with children ID(foo), INT(5), and INT(7)
+
+Function defition:
+
+    def foo(x, y):
+        z = x + y
+        return z
+    .
+
+    (FUNC_DEF ID ID ID (BLOCK (ASSIGN ID (SUB ID ID)) (RETURN ID)))
+
 Development
 -----------
 
