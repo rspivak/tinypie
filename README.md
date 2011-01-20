@@ -7,8 +7,7 @@ Overview
 TinyPie is a tree-based interpreter for a simple programming
 language with a Python-like syntax.
 
-It's based on Pie language from [Language Implementation Patterns]
-(http://pragprog.com/titles/tpdsl/language-implementation-patterns) Ch.9
+It's based on Pie language from [Language Implementation Patterns](http://pragprog.com/titles/tpdsl/language-implementation-patterns) Ch.9
 
 Quote from the book: "A tree-based interpreter is like a compiler front
 end with an interpreter grafted onto the end instead of a code generator"
@@ -78,8 +77,7 @@ High-level overview:
 
 
 
-This Tree-Based Interpreter is similar to [Syntax-Directed Interpreter]
-(http://github.com/rspivak/nososql) but instead of directly executing
+This Tree-Based Interpreter is similar to [Syntax-Directed Interpreter](http://github.com/rspivak/nososql) but instead of directly executing
 source code during parsing the interpreter executes the source code by
 constructing AST and then walking the tree.
 
