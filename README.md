@@ -9,7 +9,7 @@ language with a Python-like syntax.
 
 It's based on Pie language from [Language Implementation Patterns](http://pragprog.com/titles/tpdsl/language-implementation-patterns) Ch.9
 
-Quote from the book: "A tree-based interpreter is like a compiler front
+Quote from [the book](http://pragprog.com/titles/tpdsl/language-implementation-patterns): "A tree-based interpreter is like a compiler front
 end with an interpreter grafted onto the end instead of a code generator"
 
 
@@ -86,6 +86,7 @@ Advantages of tree-based interperter over syntax-directed one:
 1. Symbol definition and symbol resolution happen at different stages:
    - symbol definition is performed during parsing
    - symbol resolution is performed during interpretation
+
    This allows forward references and simplifies implementation -
    parser deals with scope tree only and interpreter deals with memory
    spaces.
@@ -141,19 +142,3 @@ Run pep8 and pylint to check code style and search for potential bugs:
 
     $ bin/pep8
     $ bin/pylint
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
