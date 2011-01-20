@@ -131,6 +131,57 @@ Language grammar
     call                -> ID '(' (expr (',' expr)*)? ')'
 
 
+Short language reference
+------------------------
+
+- statements: `print`, `return`, `if`, `while`,  and function call
+- literals: integers and strings
+- operators: <, ==, +, -, *
+
+Expressions may contain identifiers.
+
+Code examples
+-------------
+
+1. Factorial
+
+        print factorial(6)               # forward reference
+
+        def factorial(x):                # function definition
+            if x < 2 return 1            # if statement
+            return x * factorial(x - 1)  # return statement
+        .
+
+2. WHILE loop
+
+        index = 0
+
+        while index < 10:
+            print index
+            index = index + 1
+        .
+
+3. IF ELSE
+
+        x = 10
+        if x == 10 print 'Yes'
+        else print 'No'
+
+3. Variable lookup in different scopes
+
+        x = 1        # global variable
+        def foo(x):  # 'foo' is defined in global memory space
+            print x  # prints 3 (parameter value)
+        .
+        def bar():   # 'bar' is defined in global memory space
+            x = 7    # modify global variable
+        .
+
+        foo(3)       # prints 3
+        bar()
+        print x      # prints 7 ('bar' modified global variable)
+
+
 AST Examples
 ------------
 
@@ -140,8 +191,7 @@ Function call:
 
     foo(5, 7)
 
-    (CALL ID INT INT) means CALL is the root
-    with children ID(foo), INT(5), and INT(7)
+    (CALL ID INT INT) means CALL is the root with children ID(foo), INT(5), and INT(7)
 
 Function defition:
 
@@ -151,6 +201,7 @@ Function defition:
     .
 
     (FUNC_DEF ID ID ID (BLOCK (ASSIGN ID (SUB ID ID)) (RETURN ID)))
+
 
 Development
 -----------
