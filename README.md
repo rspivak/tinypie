@@ -22,6 +22,21 @@ Goals of the project
    their own interpreter in Python for a simple programming language or DSL
 
 
+Installation
+------------
+
+Using `buildout`
+
+    $ git clone git://github.com/rspivak/tinypie.git
+    $ cd tinypie
+    $ python bootstrap.py
+    $ bin/buildout
+
+    Run the interpreter
+
+    $ bin/tinypie factorial.tp
+
+
 Main interpreter features
 -------------------------
 
