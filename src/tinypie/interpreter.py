@@ -66,6 +66,10 @@ class InterpreterException(Exception):
 
 
 class Interpreter(object):
+    """Tree-Based Interpreter class.
+
+    Executes code by constructing AST and walking the tree.
+    """
 
     def __init__(self):
         self.global_scope = GlobalScope()
