@@ -245,3 +245,9 @@ class InterpreterTestCase(unittest.TestCase):
             print x     # prints 1 (global space)
             """)
         self.assertEquals(output.getvalue().strip(), '1')
+
+    def test_name_lookup_error(self):
+        from tinypie.interpreter import InterpreterException
+
+        interp = self._get_interpreter()
+        self.assertRaises(InterpreterException, interp.interpret, 'print x\n')

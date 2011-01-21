@@ -61,6 +61,10 @@ class ReturnValue(Exception):
         self.value = kwargs.pop('value')
 
 
+class InterpreterException(Exception):
+    pass
+
+
 class Interpreter(object):
 
     def __init__(self):
@@ -70,12 +74,14 @@ class Interpreter(object):
         self.current_space = self.globals
 
     def interpret(self, text):
+        """Interprete passed source code."""
         parser = Parser(Lexer(text), interpreter=self)
         parser.parse()
         tree = parser.root
         self._block(tree)
 
     def _exec(self, node):
+        """Dispatch method of external tree visitor"""
 
         if node.type == tokens.BLOCK:
             self._block(node)
@@ -185,7 +191,8 @@ class Interpreter(object):
         memory_space = self._get_symbol_space(name)
         if memory_space is not None:
             return memory_space.get(name)
-        return None
+
+        raise InterpreterException("name '%s' is not defined" % name)
 
     def _ifstat(self, node):
         cond_predicate = node.children[0]
