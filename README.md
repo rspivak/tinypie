@@ -177,7 +177,7 @@ Code examples
         if x == 10 print 'Yes'
         else print 'No'
 
-3. Variable lookup in different scopes
+4. Variable lookup in different scopes
 
         x = 1        # global variable
         def foo(x):  # 'foo' is defined in global memory space
