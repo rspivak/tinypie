@@ -25,16 +25,26 @@ Goals of the project
 Installation
 ------------
 
-Using `buildout`
+1. Using `buildout`
 
-    $ git clone git://github.com/rspivak/tinypie.git
-    $ cd tinypie
-    $ python bootstrap.py
-    $ bin/buildout
+        $ git clone git://github.com/rspivak/tinypie.git
+        $ cd tinypie
+        $ python bootstrap.py
+        $ bin/buildout
 
-    Run the interpreter
+        Run the interpreter
 
-    $ bin/tinypie factorial.tp
+        $ bin/tinypie factorial.tp
+
+2. Using `pip` or `easy_install` (no need for sudo if using `virtualenv`)
+
+        $ sudo pip install tinypie
+
+        (or run alternatively easy_install: `$ sudo easy_install tinypie`)
+
+        Run the interpreter
+
+        $ tinypie factorial.tp
 
 
 Main interpreter features
