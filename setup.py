@@ -186,7 +186,7 @@ Function call:
     (CALL ID INT INT) means CALL is the root
                       with children ID(foo), INT(5), and INT(7)
 
-Function defition:
+Function definition:
 
     def foo(x, y):
         z = x + y
