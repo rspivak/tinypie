@@ -142,7 +142,7 @@ Code examples
         def factorial(x):                # function definition
             if x < 2 return 1            # if statement
             return x * factorial(x - 1)  # return statement
-        .
+        .                                # DOT marks the block end
 
 2. WHILE loop
 
@@ -151,7 +151,7 @@ Code examples
         while index < 10:
             print index
             index = index + 1
-        .
+        .                                # DOT marks the block end
 
 3. IF ELSE
 
@@ -159,15 +159,15 @@ Code examples
         if x == 10 print 'Yes'
         else print 'No'
 
-3. Variable lookup in different scopes
+4. Variable lookup in different scopes
 
         x = 1        # global variable
         def foo(x):  # 'foo' is defined in global memory space
             print x  # prints 3 (parameter value)
-        .
+        .            # DOT marks the block end
         def bar():   # 'bar' is defined in global memory space
             x = 7    # modify global variable
-        .
+        .            # DOT marks the block end
 
         foo(3)       # prints 3
         bar()
