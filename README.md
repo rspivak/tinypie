@@ -14,7 +14,7 @@ end with an interpreter grafted onto the end instead of a code generator"
 
 
 Goals of the project
--------------------
+--------------------
 
 1. Self-education
 

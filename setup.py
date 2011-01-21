@@ -17,12 +17,12 @@ language with a Python-like syntax. It executes source code by
 constructing Abstract Syntax Tree(AST) and walking the tree.
 
 
-It's based on Pie language from `Language Implementation Patterns<http://pragprog.com/titles/tpdsl/language-implementation-patterns>` Ch.9
+It's based on Pie language from `Language Implementation Patterns <http://pragprog.com/titles/tpdsl/language-implementation-patterns>`_ Ch.9
 Quote from the book: "A tree-based interpreter is like a compiler front
 end with an interpreter grafted onto the end instead of a code generator"
 
 Goals of the project
--------------------
+--------------------
 
 1. Self-education
 
@@ -84,7 +84,7 @@ High-level overview:
 
 
 
-This Tree-Based Interpreter is similar to `Syntax-Directed Interpreter <http://github.com/rspivak/nososql>`
+This Tree-Based Interpreter is similar to `Syntax-Directed Interpreter <http://github.com/rspivak/nososql>`_
 but instead of directly executing source code during parsing the interpreter
 executes the source code by constructing AST and then walking the tree.
 
