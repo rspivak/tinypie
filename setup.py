@@ -212,6 +212,7 @@ setup(
     entry_points="""\
     [console_scripts]
     tinypie = tinypie.interpreter:main
+    gendot = tinypie.astviz:generate_dot
     """,
     classifiers=filter(None, classifiers.split('\n')),
     long_description=long_description,
