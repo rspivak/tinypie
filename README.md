@@ -239,3 +239,32 @@ Run pep8 and pylint to check code style and search for potential bugs:
 
     $ bin/pep8
     $ bin/pylint
+
+AST visualizer
+--------------
+
+To see how TinyPie AST for different language constructs looks
+like you can use `gendot` command line utility that is generated
+by buildout. This utility generates DOT file than can be further
+processed by [dot](http://www.graphviz.org/) program to draw nice graphs.
+
+    $ echo -n 'foo(3)' | bin/gendot
+    digraph astgraph {
+       node [shape=plaintext, fontsize=12, fontname="Courier", height=.1];
+       ranksep=.3;
+       edge [arrowsize=.5]
+
+       node1 [label="BLOCK"];
+       node2 [label="CALL"];
+       node3 [label="ID (foo)"];
+       node4 [label="INT (3)"];
+
+       node2 -> node3
+       node2 -> node4
+       node1 -> node2
+    }
+
+    To draw graph and save it as a PNG image:
+
+    $ echo -n 'foo(3)' | bin/gendot > funcall.dot
+    $ dot -Tpng -o funcall.png funcall.dot
