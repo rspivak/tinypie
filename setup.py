@@ -216,5 +216,5 @@ setup(
     """,
     classifiers=filter(None, classifiers.split('\n')),
     long_description=long_description,
-    extras_require={'test': ['']}
+    extras_require={'test': ['Jinja2']}
     )

@@ -64,6 +64,7 @@ class ASTVisualizer(object):
     >>> from tinypie.lexer import Lexer
     >>> from tinypie.parser import Parser
     >>> from tinypie.scope import GlobalScope
+    >>> from tinypie.astviz import ASTVisualizer
     >>>
     >>> class Interpreter(object):
     ...     def __init__(self):
@@ -79,13 +80,13 @@ class ASTVisualizer(object):
        node [shape=plaintext, fontsize=12, fontname="Courier", height=.1];
        ranksep=.3;
        edge [arrowsize=.5]
-
+    <BLANKLINE>
        node1 [label="BLOCK"];
        node2 [label="CALL"];
        node3 [label="ID (foo)"];
        node4 [label="INT (3)"];
        node5 [label="INT (7)"];
-
+    <BLANKLINE>
        node2 -> node3
        node2 -> node4
        node2 -> node5
