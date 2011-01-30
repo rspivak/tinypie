@@ -133,3 +133,21 @@ class Lexer(object):
                 yield token
                 return
             yield token
+
+
+class AssemblerLexer(Lexer):
+
+    RULES = [
+        (r'\.globals', tokens.GLOBALS),
+        (r'args', tokens.ARGS),
+        (r'locals', tokens.LOCALS),
+        (r'r\d+', tokens.REG),
+        (r'\.def', tokens.DEF),
+        (r'\d+', tokens.INT),
+        (r"'[^']*'", tokens.STRING),
+        (r'\r?\n', tokens.NL),
+        (r'[a-zA-Z_]+\d*', tokens.ID),
+        (r',', tokens.COMMA),
+        (r':', tokens.COLON),
+        (r'=', tokens.ASSIGN),
+        ]
