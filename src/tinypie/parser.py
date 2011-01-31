@@ -52,7 +52,34 @@ class ParserException(Exception):
     pass
 
 
-class Parser(object):
+class BaseParser(object):
+
+    # Helper methods
+    def _init_lookahead(self):
+        for _ in range(self.lookahead_limit):
+            self._consume()
+
+    def _match(self, token_type):
+        if self._lookahead_type(0) == token_type:
+            self._consume()
+        else:
+            raise ParserException(
+                'Expecting %s; found %s' % (
+                    token_type, self._lookahead_token(0))
+                )
+
+    def _consume(self):
+        self.lookahead[self.pos] = self.lexer.token()
+        self.pos = (self.pos + 1) % self.lookahead_limit
+
+    def _lookahead_type(self, number):
+        return self._lookahead_token(number).type
+
+    def _lookahead_token(self, number):
+        return self.lookahead[(self.pos + number) % self.lookahead_limit]
+
+
+class Parser(BaseParser):
     """TinyPie Parser"""
 
     def __init__(self, lexer, lookahead_limit=2, interpreter=None):
@@ -338,27 +365,3 @@ class Parser(object):
             node = self._expr()
             self._match(tokens.RPAREN)
             return node
-
-    # Helper methods
-    def _init_lookahead(self):
-        for _ in range(self.lookahead_limit):
-            self._consume()
-
-    def _match(self, token_type):
-        if self._lookahead_type(0) == token_type:
-            self._consume()
-        else:
-            raise ParserException(
-                'Expecting %s; found %s' % (
-                    token_type, self._lookahead_token(0))
-                )
-
-    def _consume(self):
-        self.lookahead[self.pos] = self.lexer.token()
-        self.pos = (self.pos + 1) % self.lookahead_limit
-
-    def _lookahead_type(self, number):
-        return self._lookahead_token(number).type
-
-    def _lookahead_token(self, number):
-        return self.lookahead[(self.pos + number) % self.lookahead_limit]
