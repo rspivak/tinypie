@@ -47,13 +47,37 @@ class BytecodeAssemblerTestCase(unittest.TestCase):
     def test_label_definition(self):
         text = """
         end:
+            print r3
+            brt r1, end
         """
         parser = self._get_parser(text)
         self.assertEquals(len(parser.labels), 0)
         parser.parse()
         self.assertEquals(len(parser.labels), 1)
-        label = parser.labels[0]
-        self.assertEquals(label.name, 'end')
+        self.assertTrue('end' in parser.labels)
+        self.assertEquals(parser.code[13], 0)
+
+    def test_label_backpatching(self):
+        from tinypie import bytecode
+        text = """
+            br end1
+            br end2
+            halt
+        end1:
+            halt
+        end2:
+            halt
+        """
+        parser = self._get_parser(text)
+        self.assertEquals(len(parser.labels), 0)
+        parser.parse()
+        self.assertEquals(len(parser.labels), 2)
+        self.assertTrue('end1' in parser.labels)
+        self.assertTrue('end2' in parser.labels)
+        # address of end1 is 11
+        self.assertEquals(parser.code[4], 11)
+        # address of end2 is 12
+        self.assertEquals(parser.code[9], 12)
 
     def test_function_definition(self):
         text = """

@@ -73,18 +73,3 @@ class FunctionSymbol(ScopedSymbol):
 
         if self.get_enclosing_scope() is not None:
             return self.get_enclosing_scope().resolve(name)
-
-
-class LabelSymbol(object):
-
-    def __init__(self, name):
-        self.name = name
-
-
-class ASMFunctionSymbol(object):
-
-    def __init__(self, name, address, args, locals):
-        self.name = name
-        self.address = address
-        self.args = args
-        self.locals = locals

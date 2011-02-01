@@ -26,8 +26,43 @@ __author__ = 'Ruslan Spivak <ruslan.spivak@gmail.com>'
 
 from tinypie import tokens
 from tinypie.parser import BaseParser
-from tinypie.symbol import LabelSymbol, ASMFunctionSymbol
 from tinypie.bytecode import INSTRUCTIONS
+
+
+def write_int(code, address, value):
+    # ensure capacity
+    if address >= len(code):
+        code.extend([0] * (len(code) - address + 4))
+
+    code[address + 0] = (value >> (8 * 3)) & 0xff
+    code[address + 1] = (value >> (8 * 2)) & 0xff
+    code[address + 2] = (value >> 8) & 0xff
+    code[address + 3] = value & 0xff
+
+
+class LabelSymbol(object):
+
+    def __init__(self, name, address=None, forward=False):
+        self.name = name
+        self.address = address
+        self.forward = forward
+        self.defined = False
+        self.forward_refs = []
+
+    def add_forward_ref(self, address):
+        self.forward_refs.append(address)
+
+    def resolve_forward_refs(self, code):
+        for ref in self.forward_refs:
+            write_int(code, ref, self.address)
+
+class FunctionSymbol(object):
+
+    def __init__(self, name, address, args, locals):
+        self.name = name
+        self.address = address
+        self.args = args
+        self.locals = locals
 
 
 # program -> globals? (label | function_definition | instruction | NL)+
@@ -59,7 +94,7 @@ class BytecodeAssembler(BaseParser):
         self.code = bytearray()
         self.ip = 0
         self.constant_pool = []
-        self.labels = []
+        self.labels = {}
         self.main_function = None
         self.opcodes = dict(
             (instr.name, index + 1)
@@ -129,7 +164,7 @@ class BytecodeAssembler(BaseParser):
 
         self._match(tokens.NL)
 
-        func_sym = ASMFunctionSymbol(name, self.ip, args, locals_num)
+        func_sym = FunctionSymbol(name, self.ip, args, locals_num)
         if name == 'main':
             self.main_function = func_sym
 
@@ -142,8 +177,7 @@ class BytecodeAssembler(BaseParser):
         label -> ID ':' NL
         """
         token = self._lookahead_token(0)
-        label = LabelSymbol(token.text)
-        self.labels.append(label)
+        self._define_label(token.text)
         self._match(tokens.ID)
         self._match(tokens.COLON)
         self._match(tokens.NL)
@@ -207,15 +241,38 @@ class BytecodeAssembler(BaseParser):
             tokens.REG: lambda: self._get_reg_number(token.text),
             }.get(token.type)()
 
-        self._write_int(self.code, value)
+        write_int(self.code, self.ip, value)
         self.ip += 4
 
     def _get_reg_number(self, text):
         return int(text[1:])
 
-    def _write_int(self, code, value):
-        code.append((value >> (8 * 3)) & 0xff)
-        code.append((value >> (8 * 2)) & 0xff)
-        code.append((value >> 8) & 0xff)
-        code.append(value & 0xff)
+    def _get_label_address(self, name):
+        label = self.labels.get(name)
 
+        if label is None:
+            # add forward reference
+            label = LabelSymbol(name, forward=True)
+            self.labels[label.name] = label
+            label.add_forward_ref(self.ip)
+
+        else:
+
+            if label.forward:
+                label.add_forward_ref(self.ip)
+
+            else:
+                return label.address
+
+        return 0
+
+    def _define_label(self, name):
+        label = self.labels.get(name)
+        if label is None:
+            label = LabelSymbol(name, self.ip)
+            self.labels[name] = label
+
+        label.address = self.ip
+        label.defined = True
+        label.forward = False
+        label.resolve_forward_refs(self.code)
