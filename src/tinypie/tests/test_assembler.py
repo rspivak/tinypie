@@ -102,9 +102,7 @@ class BytecodeAssemblerTestCase(unittest.TestCase):
         halt
         """
         parser = self._get_parser(text)
-        self.assertEquals(len(parser.code), 0)
         parser.parse()
-        self.assertEquals(len(parser.code), 1)
         # check that opcode is a HALT instruction
         self.assertEquals(parser.code[0], bytecode.INSTR_HALT)
 
@@ -114,9 +112,7 @@ class BytecodeAssemblerTestCase(unittest.TestCase):
         br 5
         """
         parser = self._get_parser(text)
-        self.assertEquals(len(parser.code), 0)
         parser.parse()
-        self.assertEquals(len(parser.code), 5)
         # check that the opcode is a BR instruction
         self.assertEquals(parser.code[0], bytecode.INSTR_BR)
         # check that the lowest byte of the instruction has value 5
@@ -128,9 +124,7 @@ class BytecodeAssemblerTestCase(unittest.TestCase):
         add r3, r1, r2
         """
         parser = self._get_parser(text)
-        self.assertEquals(len(parser.code), 0)
         parser.parse()
-        self.assertEquals(len(parser.code), 13)
         # check that the opcode is an ADD instruction
         self.assertEquals(parser.code[0], bytecode.INSTR_ADD)
         # check then register numbers
@@ -144,9 +138,7 @@ class BytecodeAssemblerTestCase(unittest.TestCase):
         loadk r2, 7
         """
         parser = self._get_parser(text)
-        self.assertEquals(len(parser.code), 0)
         parser.parse()
-        self.assertEquals(len(parser.code), 9)
         # check that the opcode is a LOADK instruction
         self.assertEquals(parser.code[0], bytecode.INSTR_LOADK)
         # check the register number

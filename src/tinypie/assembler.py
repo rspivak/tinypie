@@ -29,11 +29,7 @@ from tinypie.parser import BaseParser
 from tinypie.bytecode import INSTRUCTIONS
 
 
-def write_int(code, address, value):
-    # ensure capacity
-    if address >= len(code):
-        code.extend([0] * (len(code) - address + 4))
-
+def _write_int(code, address, value):
     code[address + 0] = (value >> (8 * 3)) & 0xff
     code[address + 1] = (value >> (8 * 2)) & 0xff
     code[address + 2] = (value >> 8) & 0xff
@@ -54,7 +50,7 @@ class LabelSymbol(object):
 
     def resolve_forward_refs(self, code):
         for ref in self.forward_refs:
-            write_int(code, ref, self.address)
+            _write_int(code, ref, self.address)
 
 class FunctionSymbol(object):
 
@@ -227,10 +223,16 @@ class BytecodeAssembler(BaseParser):
         """
         self._match(self._lookahead_type(0))
 
-    # Helper method
+    # Helper methods
+    def _ensure_capacity(self, index):
+        if index >= len(self.code):
+            new_size = max(len(self.code) * 2, index)
+            self.code.extend([0] * new_size)
+
     def _gen(self, instr_token):
         opcode = self.opcodes[instr_token.text]
-        self.code.append(opcode & 0xff)
+        self._ensure_capacity(self.ip + 1)
+        self.code[self.ip] = (opcode & 0xff)
         self.ip += 1
 
     def _gen_operand(self, token):
@@ -241,7 +243,8 @@ class BytecodeAssembler(BaseParser):
             tokens.REG: lambda: self._get_reg_number(token.text),
             }.get(token.type)()
 
-        write_int(self.code, self.ip, value)
+        self._ensure_capacity(self.ip + 4)
+        _write_int(self.code, self.ip, value)
         self.ip += 4
 
     def _get_reg_number(self, text):
