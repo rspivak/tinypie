@@ -294,7 +294,6 @@ class BytecodeAssembler(BaseParser):
 
         self._match(tokens.NL)
 
-
     def _operand(self):
         """Operand rule.
 
@@ -316,7 +315,7 @@ class BytecodeAssembler(BaseParser):
 
     def _gen_operand(self, token):
         value = {
-            tokens.INT: lambda: int(token.text),
+            tokens.INT: lambda: self._get_constant_pool_index(int(token.text)),
             tokens.STRING: lambda: self._get_constant_pool_index(token.text),
             tokens.ID: lambda: self._get_label_address(token.text),
             tokens.REG: lambda: self._get_reg_number(token.text),

@@ -108,7 +108,8 @@ class BytecodeAssemblerTestCase(unittest.TestCase):
     def test_absolute_branch_instruction(self):
         from tinypie import bytecode
         text = """
-        br 5
+            br label
+        label:
         """
         parser = self._get_parser(text)
         parser.parse()
