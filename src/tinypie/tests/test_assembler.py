@@ -146,3 +146,28 @@ class BytecodeAssemblerTestCase(unittest.TestCase):
         # check the value
         self.assertEquals(parser.code[8], 7)
 
+    def test_call_instruction(self):
+        from tinypie import bytecode
+        text = """
+            call bar, r3
+            call foo, r2
+        .def foo: args=2, locals=3
+        """
+        parser = self._get_parser(text)
+        parser.parse()
+        # check that the opcode is a CALL instruction
+        self.assertEquals(parser.code[0], bytecode.INSTR_CALL)
+        # check that the opcode is a CALL instruction
+        self.assertEquals(parser.code[9], bytecode.INSTR_CALL)
+        # check the index of constant pool for 'bar'
+        self.assertEquals(parser.code[4], 0)
+        # check the index of constant pool for 'foo'
+        self.assertEquals(parser.code[13], 1)
+        # check the register number for 'bar'
+        self.assertEquals(parser.code[8], 3)
+        # check the register number for 'foo'
+        self.assertEquals(parser.code[17], 2)
+        # check the address in constant pool
+        func_symbol = parser.constant_pool[1]
+        self.assertEquals(func_symbol.name, 'foo')
+        self.assertEquals(func_symbol.address, 18)

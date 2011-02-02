@@ -49,6 +49,7 @@ INSTRUCTIONS = [
     Instruction('brf'),       # A B    R(A) is False -> branch to B
     Instruction('move'),      # A B    R(A) = R(B)
     Instruction('print'),     # A      print R(A)
+    Instruction('call'),      # A B    call A, R(B)
     ]
 
 (INSTR_ADD,
@@ -65,4 +66,5 @@ INSTRUCTIONS = [
  INSTR_BRT,
  INSTR_BRF,
  INSTR_MOVE,
- INSTR_PRINT) = range(1, len(INSTRUCTIONS))
+ INSTR_PRINT,
+ INSTR_CALL) = range(1, len(INSTRUCTIONS))

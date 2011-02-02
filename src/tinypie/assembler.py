@@ -54,11 +54,24 @@ class LabelSymbol(object):
 
 class FunctionSymbol(object):
 
-    def __init__(self, name, address, args, locals):
+    def __init__(self, name, address=None, args=None, locals=None):
         self.name = name
         self.address = address
         self.args = args
         self.locals = locals
+
+    def __eq__(self, other):
+        return self.name == getattr(other, 'name', None)
+
+    def __str__(self):
+        return (
+            '<FunctionSymbol: name = %s, address = %s, '
+            'args = %s, locals = %s>' % (
+                self.name, self.address, self.args, self.locals)
+            )
+
+    def __repr__(self):
+        return str(self)
 
 
 # program -> globals? (label | function_definition | instruction | NL)+
@@ -160,12 +173,15 @@ class BytecodeAssembler(BaseParser):
 
         self._match(tokens.NL)
 
-        func_sym = FunctionSymbol(name, self.ip, args, locals_num)
+        func_symbol = FunctionSymbol(name, self.ip, args, locals_num)
         if name == 'main':
-            self.main_function = func_sym
+            self.main_function = func_symbol
 
-        if func_sym not in self.constant_pool:
-            self.constant_pool.append(func_sym)
+        if func_symbol in self.constant_pool:
+            index = self.constant_pool.index(func_symbol)
+            self.constant_pool[index] = func_symbol
+        else:
+            self._get_constant_pool_index(func_symbol)
 
     def _label(self):
         """Label rule.
@@ -185,8 +201,12 @@ class BytecodeAssembler(BaseParser):
                      | ID operand NL
                      | ID operand ',' operand NL
                      | ID operand ',' operand ',' operand NL
-                     | 'call' operand ',' operand NL
+                     | 'call' ID ',' operand NL
         """
+        if self._lookahead_type(0) == tokens.CALL:
+            self._call()
+            return
+
         token = self._lookahead_token(0)
         opcode = self._gen(token)
         self._match(tokens.ID)
@@ -214,6 +234,24 @@ class BytecodeAssembler(BaseParser):
         token = self._lookahead_token(0)
         self._operand()
         self._gen_operand(token)
+        self._match(tokens.NL)
+
+    def _call(self):
+        self._gen(self._lookahead_token(0))
+        self._match(tokens.CALL)
+
+        token = self._lookahead_token(0)
+        self._match(tokens.ID)
+        index = self._get_function_index(token.text)
+        self._ensure_capacity(self.ip + 4)
+        _write_int(self.code, self.ip, index)
+        self.ip += 4
+
+        self._match(tokens.COMMA)
+
+        token = self._lookahead_token(0)
+        self._gen_operand(token)
+        self._operand()
         self._match(tokens.NL)
 
     def _operand(self):
@@ -279,3 +317,18 @@ class BytecodeAssembler(BaseParser):
         label.defined = True
         label.forward = False
         label.resolve_forward_refs(self.code)
+
+    def _get_function_index(self, name):
+        func_symbol = FunctionSymbol(name)
+        try:
+            return self.constant_pool.index(func_symbol)
+        except ValueError:
+            return self._get_constant_pool_index(func_symbol)
+
+    def _get_constant_pool_index(self, obj):
+        try:
+            return self.constant_pool.index(obj)
+        except ValueError:
+            self.constant_pool.append(obj)
+            return len(self.constant_pool) - 1
+
