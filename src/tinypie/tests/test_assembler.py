@@ -131,7 +131,7 @@ class BytecodeAssemblerTestCase(unittest.TestCase):
         self.assertEquals(parser.code[8], 1)
         self.assertEquals(parser.code[12], 2)
 
-    def test_loadk_instruction(self):
+    def test_loadk_int_instruction(self):
         from tinypie import bytecode
         text = """
         loadk r2, 7
@@ -142,8 +142,23 @@ class BytecodeAssemblerTestCase(unittest.TestCase):
         self.assertEquals(parser.code[0], bytecode.INSTR_LOADK)
         # check the register number
         self.assertEquals(parser.code[4], 2)
-        # check the value
-        self.assertEquals(parser.code[8], 7)
+        # check the index of constant pool for 7
+        self.assertEquals(parser.code[8], 0)
+
+    def test_loadk_string_instruction(self):
+        from tinypie import bytecode
+        text = """
+        loadk r3, 'hello'
+        loadk r2, 'hi'
+        """
+        parser = self._get_parser(text)
+        parser.parse()
+        # check that the opcode is a LOADK instruction
+        self.assertEquals(parser.code[9], bytecode.INSTR_LOADK)
+        # check the register number
+        self.assertEquals(parser.code[13], 2)
+        # check the index of constant pool for 'hi'
+        self.assertEquals(parser.code[17], 1)
 
     def test_call_instruction(self):
         from tinypie import bytecode

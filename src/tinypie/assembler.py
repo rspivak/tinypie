@@ -203,9 +203,13 @@ class BytecodeAssembler(BaseParser):
                      | ID operand ',' operand NL
                      | ID operand ',' operand ',' operand NL
                      | 'call' ID ',' operand NL
+                     | 'loadk' REG ',' (INT | STRING) NL
         """
         if self._lookahead_type(0) == tokens.CALL:
             self._call()
+            return
+        elif self._lookahead_type(0) == tokens.LOADK:
+            self._loadk()
             return
 
         token = self._lookahead_token(0)
@@ -238,6 +242,10 @@ class BytecodeAssembler(BaseParser):
         self._match(tokens.NL)
 
     def _call(self):
+        """Call rule.
+
+        'call' ID ',' operand NL
+        """
         self._gen(self._lookahead_token(0))
         self._match(tokens.CALL)
 
@@ -254,6 +262,38 @@ class BytecodeAssembler(BaseParser):
         self._gen_operand(token)
         self._operand()
         self._match(tokens.NL)
+
+    def _loadk(self):
+        """Loadk rule.
+
+        'loadk' REG ',' (INT | STRING) NL
+        """
+        self._gen(self._lookahead_token(0))
+        self._match(tokens.LOADK)
+
+        token = self._lookahead_token(0)
+        self._match(tokens.REG)
+
+        reg = self._get_reg_number(token.text)
+        self._ensure_capacity(self.ip + 4)
+        _write_int(self.code, self.ip, reg)
+        self.ip += 4
+
+        self._match(tokens.COMMA)
+
+        token = self._lookahead_token(0)
+        if self._lookahead_type(0) == tokens.INT:
+            obj = int(token.text)
+        else:
+            obj = token.text
+        index = self._get_constant_pool_index(obj)
+        self._ensure_capacity(self.ip + 4)
+        _write_int(self.code, self.ip, index)
+        self.ip += 4
+        self._match(self._lookahead_type(0))
+
+        self._match(tokens.NL)
+
 
     def _operand(self):
         """Operand rule.

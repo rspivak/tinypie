@@ -142,6 +142,7 @@ class AssemblerLexer(Lexer):
         (r'args', tokens.ARGS),
         (r'locals', tokens.LOCALS),
         (r'call', tokens.CALL),
+        (r'loadk', tokens.LOADK),
         (r'r\d+', tokens.REG),
         (r'\.def', tokens.DEF),
         (r'\d+', tokens.INT),
