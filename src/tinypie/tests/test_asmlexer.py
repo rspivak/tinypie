@@ -85,6 +85,10 @@ class AssemblerLexerTestCase(unittest.TestCase):
         token = self._get_token('args')
         self.assertEquals(token.type, tokens.ARGS)
 
+    def test_call(self):
+        token = self._get_token('call')
+        self.assertEquals(token.type, tokens.CALL)
+
     def test_reg(self):
         token = self._get_token('r14')
         self.assertEquals(token.type, tokens.REG)
