@@ -52,6 +52,7 @@ class LabelSymbol(object):
         for ref in self.forward_refs:
             _write_int(code, ref, self.address)
 
+
 class FunctionSymbol(object):
 
     def __init__(self, name, address=None, args=None, locals=None):
@@ -331,4 +332,3 @@ class BytecodeAssembler(BaseParser):
         except ValueError:
             self.constant_pool.append(obj)
             return len(self.constant_pool) - 1
-

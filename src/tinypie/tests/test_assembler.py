@@ -58,7 +58,6 @@ class BytecodeAssemblerTestCase(unittest.TestCase):
         self.assertEquals(parser.code[13], 0)
 
     def test_label_backpatching(self):
-        from tinypie import bytecode
         text = """
             br end1
             br end2
