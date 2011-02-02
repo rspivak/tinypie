@@ -24,6 +24,7 @@
 
 __author__ = 'Ruslan Spivak <ruslan.spivak@gmail.com>'
 
+import doctest
 import unittest
 
 
@@ -186,3 +187,13 @@ class BytecodeAssemblerTestCase(unittest.TestCase):
         func_symbol = parser.constant_pool[1]
         self.assertEquals(func_symbol.name, 'foo')
         self.assertEquals(func_symbol.address, 18)
+
+
+def test_suite():
+    return unittest.TestSuite((
+        unittest.makeSuite(BytecodeAssemblerTestCase),
+        doctest.DocFileSuite(
+            '../asmutils.py',
+            optionflags=doctest.NORMALIZE_WHITESPACE|doctest.ELLIPSIS
+            ),
+        ))

@@ -66,8 +66,8 @@ class FunctionSymbol(object):
 
     def __str__(self):
         return (
-            '<FunctionSymbol: name = %s, address = %s, '
-            'args = %s, locals = %s>' % (
+            "<FunctionSymbol: name='%s', address=%s, "
+            'args=%s, locals=%s>' % (
                 self.name, self.address, self.args, self.locals)
             )
 
