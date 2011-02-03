@@ -59,7 +59,7 @@ class MemoryDump(object):
         Code memory:
         0000:  11   0   0   0   6  10  16   0
         0008:   0   0   0   0   0   0   3  10
-        0016:   0   0
+        0016:  10  10
 
         """
         if self.constant_pool:
