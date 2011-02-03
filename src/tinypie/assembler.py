@@ -25,6 +25,7 @@
 __author__ = 'Ruslan Spivak <ruslan.spivak@gmail.com>'
 
 from tinypie import tokens
+from tinypie import bytecode
 from tinypie.parser import BaseParser
 from tinypie.bytecode import INSTRUCTIONS
 
@@ -305,7 +306,7 @@ class BytecodeAssembler(BaseParser):
     def _ensure_capacity(self, index):
         if index >= len(self.code):
             new_size = max(len(self.code) * 2, index)
-            self.code.extend([0] * new_size)
+            self.code.extend([bytecode.INSTR_HALT] * new_size)
 
     def _gen(self, instr_token):
         opcode = self.opcodes[instr_token.text]
