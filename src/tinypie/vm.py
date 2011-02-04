@@ -26,6 +26,7 @@ __author__ = 'Ruslan Spivak <ruslan.spivak@gmail.com>'
 
 from tinypie import bytecode
 from tinypie.assembler import FunctionSymbol
+from tinypie.asmutils import MemoryDump
 
 
 class StackFrame(object):
@@ -54,13 +55,17 @@ class VM(object):
 
     def execute(self):
         if self.main_function is None:
-            main_function = self.main_function = FunctionSymbol(
+            self.main_function = FunctionSymbol(
                 'main', address=0, args=0, locals=0)
 
         self.fp += 1
-        self.calls[self.fp] = StackFrame(main_function, self.ip)
-        self.ip = main_function.address
+        self.calls[self.fp] = StackFrame(self.main_function, self.ip)
+        self.ip = self.main_function.address
         self._cpu()
+
+    def coredump(self):
+        md = MemoryDump(self.code, self.globals, self.constant_pool)
+        md.coredump()
 
     def _cpu(self):
         """Simulate fetch-decode-execute cycle."""
@@ -104,6 +109,34 @@ class VM(object):
                 index = self._get_int_operand()
                 regs[a] = self.constant_pool[index]
 
+            elif opcode == bytecode.INSTR_LT:
+                a = self._get_reg_operand()
+                b = self._get_reg_operand()
+                c = self._get_reg_operand()
+                regs[a] = int(regs[b] < regs[c])
+
+            elif opcode == bytecode.INSTR_EQ:
+                a = self._get_reg_operand()
+                b = self._get_reg_operand()
+                c = self._get_reg_operand()
+                regs[a] = int(regs[b] == regs[c])
+
+            elif opcode == bytecode.INSTR_BR:
+                address = self._get_int_operand()
+                self.ip = address
+
+            elif opcode == bytecode.INSTR_BRT:
+                a = self._get_reg_operand()
+                address = self._get_int_operand()
+                if bool(regs[a]):
+                    self.ip = address
+
+            elif opcode == bytecode.INSTR_BRF:
+                a = self._get_reg_operand()
+                address = self._get_int_operand()
+                if not bool(regs[a]):
+                    self.ip = address
+
             opcode = self.code[self.ip]
 
     def _get_reg_operand(self):
@@ -114,6 +147,6 @@ class VM(object):
         b2 = self.code[self.ip + 1] & 0xff
         b3 = self.code[self.ip + 2] & 0xff
         b4 = self.code[self.ip + 3] & 0xff
-        word = (b1 << (8 * 3)) | (b2 << (8 * 2)) | (b3 << (8 * 2)) | b1
+        word = (b1 << (8 * 3)) | (b2 << (8 * 2)) | (b3 << 8) | b4
         self.ip += 4
         return word
