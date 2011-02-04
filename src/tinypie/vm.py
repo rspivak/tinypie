@@ -203,6 +203,8 @@ def main():
     parser.add_option('-i', '--input',
                       dest='file',
                       help='Input file. Defaults to standard input.')
+    parser.add_option('-c', '--coredump', action='store_true', dest='coredump',
+                      help='Print coredump to standard output.')
     options, args = parser.parse_args()
 
     if options.file is not None:
@@ -214,3 +216,6 @@ def main():
     assembler.parse()
     vm = VM(assembler)
     vm.execute()
+
+    if options.coredump:
+        vm.coredump()
