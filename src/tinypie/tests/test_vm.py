@@ -261,3 +261,30 @@ class VMTestCase(unittest.TestCase):
             vm.execute()
         self.assertEquals(output.getvalue().strip(), 'hello')
 
+    def test_factorial(self):
+        text = """
+        .def factorial: args=1, locals=3
+            # r1 holds argument 'n'
+            loadk r2, 2
+            lt r3, r1, r2        # n < 2 ?
+            brf r3, cont         # if n >= 2 jump to 'cont'
+            loadk r0, 1          # else return 1
+            ret
+        cont:
+            loadk r2, 1          # r2 = 1
+            move r3, r1          # r3 = n
+            sub r1, r1, r2       # r1 = n - 1
+            call factorial, r1   # factorial(n - 1)
+            mul r0, r3, r0       # n = n * result of factorial(n - 1)
+            ret
+
+        .def main: args=0, locals=1
+            loadk r1, 5
+            call factorial, r1 # factorial(5)
+            print r0           # 120
+            halt
+        """
+        vm = self._get_vm(text)
+        with redirected_output() as output:
+            vm.execute()
+        self.assertEquals(int(output.getvalue().strip()), 120)

@@ -149,7 +149,31 @@ class VM(object):
                 b = self.constant_pool[index]
                 regs[a] = self.globals[b]
 
+            elif opcode == bytecode.INSTR_CALL:
+                self._call()
+
+            elif opcode == bytecode.INSTR_RET:
+                stack_frame = self.calls[self.fp]
+                self.fp -= 1
+                self.calls[self.fp].registers[0] = stack_frame.registers[0]
+                self.ip = stack_frame.return_address
+
             opcode = self.code[self.ip]
+
+    def _call(self):
+        calling_frame = self.calls[self.fp]
+        index = self._get_int_operand()
+        base_reg = self._get_int_operand()
+        func_symbol = self.constant_pool[index]
+        stack_frame = StackFrame(func_symbol, self.ip)
+
+        for a in range(func_symbol.args):
+            stack_frame.registers[a + 1] = \
+                                    calling_frame.registers[base_reg + a]
+
+        self.fp += 1
+        self.calls[self.fp] = stack_frame
+        self.ip = func_symbol.address
 
     def _get_reg_operand(self):
         return self._get_int_operand()
