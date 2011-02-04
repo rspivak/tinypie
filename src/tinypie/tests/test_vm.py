@@ -244,3 +244,20 @@ class VMTestCase(unittest.TestCase):
         with redirected_output() as output:
             vm.execute()
         self.assertEquals(int(output.getvalue().strip()), 13)
+
+    def test_globals(self):
+        text = """
+        .globals 1
+
+        .def main: args=0, locals=2
+            loadk r1, 'hello'
+            gstore 0, r1
+            gload r2, 0
+            print r2
+            halt
+        """
+        vm = self._get_vm(text)
+        with redirected_output() as output:
+            vm.execute()
+        self.assertEquals(output.getvalue().strip(), 'hello')
+

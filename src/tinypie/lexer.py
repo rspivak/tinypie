@@ -121,6 +121,8 @@ class Lexer(object):
 
         group_name = match.lastgroup
         token = Token(group_name, match.group(group_name))
+        if token.type == tokens.STRING:
+            token.text = token.text.strip("'")
         return token
 
     def __iter__(self):

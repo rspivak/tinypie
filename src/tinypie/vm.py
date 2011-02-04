@@ -45,7 +45,7 @@ class VM(object):
         self.main_function = assembler.main_function
         self.code = assembler.code
         self.constant_pool = assembler.constant_pool
-        self.globals = [None] * assembler.global_size
+        self.globals = [0] * assembler.global_size
         # instruction pointer
         self.ip = 0
         # call stack
@@ -136,6 +136,18 @@ class VM(object):
                 address = self._get_int_operand()
                 if not bool(regs[a]):
                     self.ip = address
+
+            elif opcode == bytecode.INSTR_GSTORE:
+                index = self._get_int_operand()
+                a = self.constant_pool[index]
+                b = self._get_reg_operand()
+                self.globals[a] = regs[b]
+
+            elif opcode == bytecode.INSTR_GLOAD:
+                a = self._get_reg_operand()
+                index = self._get_int_operand()
+                b = self.constant_pool[index]
+                regs[a] = self.globals[b]
 
             opcode = self.code[self.ip]
 
