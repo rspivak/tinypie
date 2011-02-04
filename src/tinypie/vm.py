@@ -24,9 +24,14 @@
 
 __author__ = 'Ruslan Spivak <ruslan.spivak@gmail.com>'
 
+import sys
+import optparse
+import textwrap
+
 from tinypie import bytecode
-from tinypie.assembler import FunctionSymbol
 from tinypie.asmutils import MemoryDump
+from tinypie.lexer import AssemblerLexer
+from tinypie.assembler import FunctionSymbol, BytecodeAssembler
 
 
 class StackFrame(object):
@@ -186,3 +191,26 @@ class VM(object):
         word = (b1 << (8 * 3)) | (b2 << (8 * 2)) | (b3 << 8) | b4
         self.ip += 4
         return word
+
+
+def main():
+    usage = textwrap.dedent("""\
+    %prog [input file]
+
+    If no input file is provided STDIN is used by default.
+    """)
+    parser = optparse.OptionParser(usage=usage)
+    parser.add_option('-i', '--input',
+                      dest='file',
+                      help='Input file. Defaults to standard input.')
+    options, args = parser.parse_args()
+
+    if options.file is not None:
+        text = open(options.file).read()
+    else:
+        text = sys.stdin.read()
+
+    assembler = BytecodeAssembler(AssemblerLexer(text))
+    assembler.parse()
+    vm = VM(assembler)
+    vm.execute()
