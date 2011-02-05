@@ -50,7 +50,7 @@ class VM(object):
         self.main_function = assembler.main_function
         self.code = assembler.code
         self.constant_pool = assembler.constant_pool
-        self.globals = [0] * assembler.global_size
+        self.globals = [None] * assembler.global_size
         # instruction pointer
         self.ip = 0
         # call stack

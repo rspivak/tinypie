@@ -38,28 +38,48 @@ class MemoryDump(object):
 
         >>> from tinypie.lexer import AssemblerLexer
         >>> from tinypie.assembler import BytecodeAssembler
+        >>> from tinypie.vm import VM
         >>> from tinypie.asmutils import MemoryDump
         >>>
         >>> text = '''
+        ... .globals 1
+        ... .def main: args=0, locals=1
         ...     br label
         ...     halt
         ... label:
-        ...     call foo, r3
-        ... .def foo: args=2, locals=1
+        ...     loadk r1, 'hi'
+        ...     gstore 0, r1
+        ...     call foo, r1
         ...     halt
+        ... .def foo: args=1, locals=0
+        ...     print r1
         ... '''
 
-        >>> parser = BytecodeAssembler(AssemblerLexer(text))
-        >>> parser.parse()
-        >>> md = MemoryDump(parser.code, [], parser.constant_pool)
+        >>> assembler = BytecodeAssembler(AssemblerLexer(text))
+        >>> assembler.parse()
+        >>> vm = VM(assembler)
+        >>> vm.execute()
+        hi
+        >>>
+        >>> md = MemoryDump(vm.code, vm.globals, vm.constant_pool)
         >>> md.coredump()
         Constant pool:
-        0000: <FunctionSymbol: name='foo', address=15, args=2, locals=1>
+        0000: <FunctionSymbol: name='main', address=0, args=0, locals=1>
+        0001: 'hi'
+        0002: 0
+        0003: <FunctionSymbol: name='foo', address=34, args=1, locals=0>
+        <BLANKLINE>
+        Data memory:
+        0000: hi <str>
         <BLANKLINE>
         Code memory:
-        0000:  11   0   0   0   6  10  16   0
-        0008:   0   0   0   0   0   0   3  10
-        0016:  10  10
+        0000:  11   0   0   0   6  10   6   0
+        0008:   0   0   1   0   0   0   1   8
+        0016:   0   0   0   2   0   0   0   1
+        0024:  16   0   0   0   3   0   0   0
+        0032:   1  10  15   0   0   0   1  10
+        0040:  10  10  10  10  10  10  10  10
+        0048:  10  10  10  10  10  10
 
         """
         if self.constant_pool:
