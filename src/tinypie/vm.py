@@ -59,19 +59,27 @@ class VM(object):
     ...     brt r3, end
     ...     loadk r1, 13
     ... end:
-    ...     print r1
+    ...     call msg, r1
+    ...     print r0
+    ...     halt
+    ... .def msg: args=1, locals=0
+    ...     move r0, r1
+    ...     ret
     ... '''
 
     >>> assembler = BytecodeAssembler(AssemblerLexer(text))
     >>> assembler.parse()
     >>> vm = VM(assembler, trace=True)
     >>> vm.execute()
-    0000: LOADK   r1, #1:5     main.registers=[? | ? ? ?]    calls=[main]
-    0009: LOADK   r2, #2:7     main.registers=[? | 5 ? ?]    calls=[main]
-    0018: LT      r3, r2, r1   main.registers=[? | 5 7 ?]    calls=[main]
-    0031: BRT     r3, 49       main.registers=[? | 5 7 0]    calls=[main]
-    0040: LOADK   r1, #3:13    main.registers=[? | 5 7 0]    calls=[main]
-    0049: PRINT   r1           main.registers=[? | 13 7 0]   calls=[main]
+    0000: LOADK   r1, #1:5       main.registers=[? | ? ? ?]    calls=[main]
+    0009: LOADK   r2, #2:7       main.registers=[? | 5 ? ?]    calls=[main]
+    0018: LT      r3, r2, r1     main.registers=[? | 5 7 ?]    calls=[main]
+    0031: BRT     r3, 49         main.registers=[? | 5 7 0]    calls=[main]
+    0040: LOADK   r1, #3:13      main.registers=[? | 5 7 0]    calls=[main]
+    0049: CALL    #4:msg@64, r1  main.registers=[? | 13 7 0]   calls=[main]
+    0064: MOVE    r0, r1         msg.registers=[? | 13]        calls=[main msg]
+    0073: RET                    msg.registers=[13 | 13]       calls=[main msg]
+    0058: PRINT   r0             main.registers=[13 | 13 7 0]  calls=[main]
     13
 
     """
