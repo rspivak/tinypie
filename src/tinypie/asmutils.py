@@ -24,6 +24,17 @@
 
 __author__ = 'Ruslan Spivak <ruslan.spivak@gmail.com>'
 
+from tinypie import bytecode
+
+
+def get_int(code, address):
+    b1 = code[address] & 0xff
+    b2 = code[address + 1] & 0xff
+    b3 = code[address + 2] & 0xff
+    b4 = code[address + 3] & 0xff
+    word = (b1 << (8 * 3)) | (b2 << (8 * 2)) | (b3 << 8) | b4
+    return word
+
 
 class MemoryDump(object):
     """Dumps code memory, data memory(globals), and constant pool."""
@@ -116,4 +127,102 @@ class MemoryDump(object):
 
             result += ' %3d' % byte_value
 
-        print result
+        print '%s\n' % result
+
+
+class DisAssembler(object):
+    """Bytecode disassembler.
+
+    When printing values from constant pool the following format is used:
+    #pool_index:pool_value
+
+    Function format for CALL instruction:
+    #pool_index:func_name@func_address
+
+    >>> from tinypie.lexer import AssemblerLexer
+    >>> from tinypie.assembler import BytecodeAssembler
+    >>> from tinypie.vm import VM
+    >>> from tinypie.asmutils import DisAssembler
+    >>>
+    >>> text = '''
+    ... .globals 1
+    ... .def main: args=0, locals=1
+    ...     br label
+    ...     halt
+    ... label:
+    ...     loadk r1, 'hi'
+    ...     gstore 0, r1
+    ...     call foo, r1
+    ...     halt
+    ... .def foo: args=1, locals=0
+    ...     print r1
+    ... '''
+
+    >>> assembler = BytecodeAssembler(AssemblerLexer(text))
+    >>> assembler.parse()
+    >>> dis = DisAssembler(
+    ...     assembler.code, assembler.code_size, assembler.constant_pool)
+    >>> dis.disassemble()
+    Disassembly:
+    0000: BR      6
+    0005: HALT
+    0006: LOADK   r1, #1:'hi'
+    0015: GSTORE  #2:0, r1
+    0024: CALL    #3:foo@34, r1
+    0033: HALT
+    0034: PRINT   r1
+
+    """
+
+    def __init__(self, code, code_size, constant_pool):
+        self.code = code
+        self.code_size = code_size
+        self.constant_pool = constant_pool
+
+    def disassemble(self):
+        print 'Disassembly:'
+        index = 0
+        while index < self.code_size:
+            opcode = self.code[index]
+            instruction = bytecode.INSTRUCTIONS[opcode]
+            index = self._dis_instruction(instruction, index)
+
+    def _dis_instruction(self, instr, ip):
+        result = []
+        index = ip + 1
+
+        for operand_type in instr.operand_types:
+            if operand_type == bytecode.INT:
+                result.append(str(get_int(self.code, index)))
+                index += 4
+
+            elif operand_type == bytecode.REG:
+                result.append('r%s' % get_int(self.code, index))
+                index += 4
+
+            elif operand_type == bytecode.FUNC:
+                pool_index = get_int(self.code, index)
+                func_symbol = self.constant_pool[pool_index]
+                value = '#{pool_index}:{func_name}@{func_address}'.format(
+                    pool_index=pool_index, func_name=func_symbol.name,
+                    func_address=func_symbol.address)
+                result.append(value)
+                index += 4
+
+            elif operand_type == bytecode.POOL:
+                pool_index = get_int(self.code, index)
+                value = self.constant_pool[pool_index]
+                if isinstance(value, str):
+                    value = "'%s'" % value
+                value = '#{pool_index}:{value}'.format(
+                    pool_index=pool_index, value=value)
+                result.append(str(value))
+                index += 4
+
+        output = '{address:04}: {instr_name:8}{operands}'.format(
+            address=ip, instr_name=instr.name.upper(),
+            operands=', '.join(result))
+
+        print output
+
+        return index

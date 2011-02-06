@@ -29,7 +29,7 @@ import optparse
 import textwrap
 
 from tinypie import bytecode
-from tinypie.asmutils import MemoryDump
+from tinypie import asmutils
 from tinypie.lexer import AssemblerLexer
 from tinypie.assembler import FunctionSymbol, BytecodeAssembler
 
@@ -49,6 +49,7 @@ class VM(object):
     def __init__(self, assembler):
         self.main_function = assembler.main_function
         self.code = assembler.code
+        self.code_size = assembler.code_size
         self.constant_pool = assembler.constant_pool
         self.globals = [None] * assembler.global_size
         # instruction pointer
@@ -69,13 +70,17 @@ class VM(object):
         self._cpu()
 
     def coredump(self):
-        md = MemoryDump(self.code, self.globals, self.constant_pool)
+        md = asmutils.MemoryDump(self.code, self.globals, self.constant_pool)
         md.coredump()
+
+    def disassemble(self):
+        disasm = asmutils.DisAssembler(self.code, self.constant_pool)
+        disasm.disassemble()
 
     def _cpu(self):
         """Simulate fetch-decode-execute cycle."""
         opcode = self.code[self.ip]
-        while opcode != bytecode.INSTR_HALT and self.ip < len(self.code):
+        while opcode != bytecode.INSTR_HALT and self.ip < self.code_size:
 
             # first operand of an instruction
             self.ip += 1
@@ -184,11 +189,7 @@ class VM(object):
         return self._get_int_operand()
 
     def _get_int_operand(self):
-        b1 = self.code[self.ip] & 0xff
-        b2 = self.code[self.ip + 1] & 0xff
-        b3 = self.code[self.ip + 2] & 0xff
-        b4 = self.code[self.ip + 3] & 0xff
-        word = (b1 << (8 * 3)) | (b2 << (8 * 2)) | (b3 << 8) | b4
+        word = asmutils.get_int(self.code, self.ip)
         self.ip += 4
         return word
 
@@ -205,6 +206,8 @@ def main():
                       help='Input file. Defaults to standard input.')
     parser.add_option('-c', '--coredump', action='store_true', dest='coredump',
                       help='Print coredump to standard output.')
+    parser.add_option('-d', '--disasm', action='store_true', dest='disasm',
+                      help='Print disassembled code to standard output.')
     options, args = parser.parse_args()
 
     if options.file is not None:
@@ -219,3 +222,6 @@ def main():
 
     if options.coredump:
         vm.coredump()
+
+    if options.disasm:
+        vm.disassemble()

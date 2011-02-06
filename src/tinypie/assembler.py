@@ -103,6 +103,7 @@ class BytecodeAssembler(BaseParser):
         self._init_lookahead()
         self.global_size = 0
         self.code = bytearray()
+        self.code_size = 0
         self.ip = 0
         self.constant_pool = []
         self.labels = {}
@@ -134,6 +135,8 @@ class BytecodeAssembler(BaseParser):
 
             else:
                 self._instruction()
+
+        self.code_size = self.ip
 
     def _globals(self):
         """Globals rule.

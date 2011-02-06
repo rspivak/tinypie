@@ -24,32 +24,41 @@
 
 __author__ = 'Ruslan Spivak <ruslan.spivak@gmail.com>'
 
+# Opcode operand types: used by disassmbler
+REG = 1
+INT = 2
+FUNC = 3
+POOL = 4
+
 
 class Instruction(object):
 
-    def __init__(self, name, *operands):
+    def __init__(self, name, *operand_types):
         self.name = name
-        #self.types = list(operands)
+        self.operand_types = operand_types
+
+    def __str__(self):
+        return self.name
 
 # Index serves as an opcode
 INSTRUCTIONS = [
     None,
-    Instruction('add'),       # A B C  R(A) = R(B) + R(C)
-    Instruction('sub'),       # A B C  R(A) = R(B) - R(C)
-    Instruction('mul'),       # A B C  R(A) = R(B) * R(C)
-    Instruction('lt'),        # A B C  R(A) = R(B) < R(C)
-    Instruction('eq'),        # A B C  R(A) = R(B) == R(C)
-    Instruction('loadk'),     # A B    R(A) = CONST_POOL[B]
-    Instruction('gload'),     # A B    R(A) = GLOBALS[B]
-    Instruction('gstore'),    # A B    GLOBALS[A] = R(B)
+    Instruction('add', REG, REG, REG),   # A B C  R(A) = R(B) + R(C)
+    Instruction('sub', REG, REG, REG),   # A B C  R(A) = R(B) - R(C)
+    Instruction('mul', REG, REG, REG),   # A B C  R(A) = R(B) * R(C)
+    Instruction('lt', REG, REG, REG),    # A B C  R(A) = R(B) < R(C)
+    Instruction('eq', REG, REG, REG),    # A B C  R(A) = R(B) == R(C)
+    Instruction('loadk', REG, POOL),     # A B    R(A) = CONST_POOL[B]
+    Instruction('gload', REG, POOL),     # A B    R(A) = GLOBALS[B]
+    Instruction('gstore', POOL, REG),    # A B    GLOBALS[A] = R(B)
     Instruction('ret'),
     Instruction('halt'),
-    Instruction('br'),        # A      branch to A
-    Instruction('brt'),       # A B    R(A) is True -> branch to B
-    Instruction('brf'),       # A B    R(A) is False -> branch to B
-    Instruction('move'),      # A B    R(A) = R(B)
-    Instruction('print'),     # A      print R(A)
-    Instruction('call'),      # A B    call A, R(B)
+    Instruction('br', INT),              # A      branch to A
+    Instruction('brt', REG, INT),        # A B    R(A) is True -> branch to B
+    Instruction('brf', REG, INT),        # A B    R(A) is False -> branch to B
+    Instruction('move', REG, REG),       # A B    R(A) = R(B)
+    Instruction('print', REG),           # A      print R(A)
+    Instruction('call', FUNC, REG),      # A B    call A, R(B)
     ]
 
 (INSTR_ADD,    # 1
