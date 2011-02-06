@@ -43,6 +43,38 @@ class StackFrame(object):
 
 
 class VM(object):
+    """Register-Based Bytecode Interpreter.
+
+    Example of trace execution:
+
+    >>> from tinypie.lexer import AssemblerLexer
+    >>> from tinypie.assembler import BytecodeAssembler
+    >>> from tinypie.vm import VM
+    >>>
+    >>> text = '''
+    ... .def main: args=0, locals=3
+    ...     loadk r1, 5
+    ...     loadk r2, 7
+    ...     lt r3, r2, r1
+    ...     brt r3, end
+    ...     loadk r1, 13
+    ... end:
+    ...     print r1
+    ... '''
+
+    >>> assembler = BytecodeAssembler(AssemblerLexer(text))
+    >>> assembler.parse()
+    >>> vm = VM(assembler, trace=True)
+    >>> vm.execute()
+    0000: LOADK   r1, #1:5     main.registers=[? | ? ? ?]    calls=[main]
+    0009: LOADK   r2, #2:7     main.registers=[? | 5 ? ?]    calls=[main]
+    0018: LT      r3, r2, r1   main.registers=[? | 5 7 ?]    calls=[main]
+    0031: BRT     r3, 49       main.registers=[? | 5 7 0]    calls=[main]
+    0040: LOADK   r1, #3:13    main.registers=[? | 5 7 0]    calls=[main]
+    0049: PRINT   r1           main.registers=[? | 13 7 0]   calls=[main]
+    13
+
+    """
 
     CALL_STACK_SIZE = 1000
 

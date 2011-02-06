@@ -25,6 +25,7 @@
 __author__ = 'Ruslan Spivak <ruslan.spivak@gmail.com>'
 
 import sys
+import doctest
 import unittest
 import StringIO
 
@@ -288,3 +289,13 @@ class VMTestCase(unittest.TestCase):
         with redirected_output() as output:
             vm.execute()
         self.assertEquals(int(output.getvalue().strip()), 120)
+
+
+def test_suite():
+    return unittest.TestSuite((
+        unittest.makeSuite(VMTestCase),
+        doctest.DocFileSuite(
+            '../vm.py',
+            optionflags=doctest.NORMALIZE_WHITESPACE|doctest.ELLIPSIS
+            ),
+        ))
