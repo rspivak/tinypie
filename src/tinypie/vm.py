@@ -39,14 +39,14 @@ class StackFrame(object):
     def __init__(self, func_symbol, return_address):
         self.func_symbol = func_symbol
         self.return_address = return_address
-        self.registers = [0] * (func_symbol.args + func_symbol.locals + 1)
+        self.registers = [None] * (func_symbol.args + func_symbol.locals + 1)
 
 
 class VM(object):
 
     CALL_STACK_SIZE = 1000
 
-    def __init__(self, assembler):
+    def __init__(self, assembler, trace=False):
         self.main_function = assembler.main_function
         self.code = assembler.code
         self.code_size = assembler.code_size
@@ -58,6 +58,10 @@ class VM(object):
         self.calls = [None] * self.CALL_STACK_SIZE
         # frame pointer
         self.fp = -1
+        self.trace = trace
+        # initialize disassmbler
+        self.disasm = asmutils.DisAssembler(
+            self.code, self.code_size, self.constant_pool)
 
     def execute(self):
         if self.main_function is None:
@@ -75,15 +79,14 @@ class VM(object):
         md.coredump()
 
     def disassemble(self):
-        disasm = asmutils.DisAssembler(
-            self.code, self.code_size, self.constant_pool)
-        disasm.disassemble()
+        self.disasm.disassemble()
 
     def _cpu(self):
         """Simulate fetch-decode-execute cycle."""
         opcode = self.code[self.ip]
         while opcode != bytecode.INSTR_HALT and self.ip < self.code_size:
-
+            if self.trace:
+                self._trace()
             # first operand of an instruction
             self.ip += 1
             # shortcut to current registers
@@ -195,6 +198,42 @@ class VM(object):
         self.ip += 4
         return word
 
+    def _trace(self):
+        _, instr_text = self.disasm.disassemble_instruction(self.code, self.ip)
+        registers = self.calls[self.fp].registers
+        func_symbol = self.calls[self.fp].func_symbol
+
+        result = '%s.registers=[' % func_symbol.name
+        for index, reg_value in enumerate(registers):
+
+            if index in (1, func_symbol.args + 1):
+                result += ' |'
+
+            if index != 0:
+                result += ' '
+
+            if reg_value is None:
+                result += '?'
+            else:
+                if isinstance(reg_value, str):
+                    reg_value = "'%s'" % reg_value
+                result += str(reg_value)
+
+        result += ']'
+        regs_out = '{registers:20}'.format(registers=result)
+
+        calls_out = 'calls=['
+        index = 0
+        while index <= self.fp:
+            calls_out += self.calls[index].func_symbol.name
+            if index != self.fp:
+                calls_out += ' '
+            index += 1
+        calls_out += ']'
+
+        print '{instruction:30} {registers:35} {calls}'.format(
+            instruction=instr_text, registers=regs_out, calls=calls_out)
+
 
 def main():
     usage = textwrap.dedent("""\
@@ -210,6 +249,8 @@ def main():
                       help='Print coredump to standard output.')
     parser.add_option('-d', '--disasm', action='store_true', dest='disasm',
                       help='Print disassembled code to standard output.')
+    parser.add_option('-t', '--trace', action='store_true', dest='trace',
+                      help='Print execution trace.')
     options, args = parser.parse_args()
 
     if options.file is not None:
@@ -219,7 +260,7 @@ def main():
 
     assembler = BytecodeAssembler(AssemblerLexer(text))
     assembler.parse()
-    vm = VM(assembler)
+    vm = VM(assembler, trace=options.trace)
     vm.execute()
 
     if options.coredump:

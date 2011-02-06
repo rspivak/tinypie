@@ -184,15 +184,16 @@ class DisAssembler(object):
         print 'Disassembly:'
         index = 0
         while index < self.code_size:
-            opcode = self.code[index]
-            instruction = bytecode.INSTRUCTIONS[opcode]
-            index = self._dis_instruction(instruction, index)
+            index, output = self.disassemble_instruction(self.code, index)
+            print output
 
-    def _dis_instruction(self, instr, ip):
-        result = []
+    def disassemble_instruction(self, code, ip):
+        opcode = code[ip]
+        instruction = bytecode.INSTRUCTIONS[opcode]
         index = ip + 1
+        result = []
 
-        for operand_type in instr.operand_types:
+        for operand_type in instruction.operand_types:
             if operand_type == bytecode.INT:
                 result.append(str(get_int(self.code, index)))
                 index += 4
@@ -221,9 +222,7 @@ class DisAssembler(object):
                 index += 4
 
         output = '{address:04}: {instr_name:8}{operands}'.format(
-            address=ip, instr_name=instr.name.upper(),
+            address=ip, instr_name=instruction.name.upper(),
             operands=', '.join(result))
 
-        print output
-
-        return index
+        return index, output
