@@ -45,7 +45,7 @@ class StackFrame(object):
 class VM(object):
     """Register-Based Bytecode Interpreter.
 
-    Example of trace execution:
+    Example of execution trace:
 
     >>> from tinypie.lexer import AssemblerLexer
     >>> from tinypie.assembler import BytecodeAssembler
