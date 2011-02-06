@@ -70,11 +70,13 @@ class VM(object):
         self._cpu()
 
     def coredump(self):
-        md = asmutils.MemoryDump(self.code, self.globals, self.constant_pool)
+        md = asmutils.MemoryDump(
+            self.code, self.code_size, self.globals, self.constant_pool)
         md.coredump()
 
     def disassemble(self):
-        disasm = asmutils.DisAssembler(self.code, self.constant_pool)
+        disasm = asmutils.DisAssembler(
+            self.code, self.code_size, self.constant_pool)
         disasm.disassemble()
 
     def _cpu(self):
