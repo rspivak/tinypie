@@ -39,8 +39,9 @@ def get_int(code, address):
 class MemoryDump(object):
     """Dumps code memory, data memory(globals), and constant pool."""
 
-    def __init__(self, code_memory, data_memory, constant_pool):
+    def __init__(self, code_memory, code_size, data_memory, constant_pool):
         self.code_memory = code_memory
+        self.code_size = code_size
         self.data_memory = data_memory
         self.constant_pool = constant_pool
 
@@ -72,7 +73,8 @@ class MemoryDump(object):
         >>> vm.execute()
         hi
         >>>
-        >>> md = MemoryDump(vm.code, vm.globals, vm.constant_pool)
+        >>> md = MemoryDump(
+        ...     vm.code, vm.code_size, vm.globals, vm.constant_pool)
         >>> md.coredump()
         Constant pool:
         0000: <FunctionSymbol: name='main', address=0, args=0, locals=1>
@@ -88,9 +90,7 @@ class MemoryDump(object):
         0008:   0   0   1   0   0   0   1   8
         0016:   0   0   0   2   0   0   0   1
         0024:  16   0   0   0   3   0   0   0
-        0032:   1  10  15   0   0   0   1  10
-        0040:  10  10  10  10  10  10  10  10
-        0048:  10  10  10  10  10  10
+        0032:   1  10  15   0   0   0   1
 
         """
         if self.constant_pool:
@@ -119,7 +119,8 @@ class MemoryDump(object):
     def _dump_code_memory(self):
         print 'Code memory:'
         result = ''
-        for index, byte_value in enumerate(self.code_memory):
+        for index in range(self.code_size):
+            byte_value = self.code_memory[index]
             if index % 8 == 0 and index != 0:
                 result += '\n'
             if index % 8 == 0:
