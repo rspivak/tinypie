@@ -270,6 +270,106 @@ processed by [dot](http://www.graphviz.org/) program to draw nice graphs.
     $ dot -Tpng -o funcall.png funcall.dot
 
 
+Bytecode Assembler
+------------------
+
+Converts assembly program into binary bytecodes.
+The bytecode is further interpreted by the TinyPie
+Register-Based Bytecode Interpreter / Virtual Machine.
+
+TinyPie Assembly language grammar:
+
+    program -> globals? (label | function_definition | instruction | NL)+
+    globals -> '.globals' INT NL
+    label -> ID ':' NL
+    function_definition -> '.def' ID ':' 'args' '=' INT ',' 'locals' '=' INT NL
+    instruction -> ID NL
+                 | ID operand NL
+                 | ID operand ',' operand NL
+                 | ID operand ',' operand NL ',' operand NL
+                 | 'call' operand
+    operand -> REG | ID | STRING | INT
+
+
+Assembler yields the following components:
+
+1. *Code memory*: This is a `bytearray` containing
+   bytecode instructions and their operands derived from
+   the assembly source code.
+
+2. *Global data memory size*: The number of slots allocated
+   in global memory for use with GSTORE and GLOAD assembly commands.
+
+3. *Program entry point*: An address of main function `.def main: ...`
+
+4. *Constant pool*: A list of objects (integers, strings, function symbols)
+   that are not part of the code memory. Bytecode instructions refer
+   to those objects via integer index.
+
+
+Here is a factorial function in TinyPie language:
+
+    def factorial(x):
+        if x < 2 return 1
+        return x * factorial(x - 1)
+    .
+
+    print factorial(5)
+
+
+Here is an equivalent TinyPie assembly code:
+
+    .def factorial: args=1, locals=3
+        # r1 holds argument 'n'
+        loadk r2, 2
+        lt r3, r1, r2        # n < 2 ?
+        brf r3, cont         # if n >= 2 jump to 'cont'
+        loadk r0, 1          # else return 1
+        ret
+    cont:
+        loadk r2, 1          # r2 = 1
+        move r3, r1          # r3 = n
+        sub r1, r1, r2       # r1 = n - 1
+        call factorial, r1   # factorial(n - 1)
+        mul r0, r3, r0       # n = n * result of factorial(n - 1)
+        ret
+
+    .def main: args=0, locals=1
+        loadk r1, 5
+        call factorial, r1   # factorial(5)
+        print r0             # 120
+        halt
+
+Here are the resulting elements produced by the Bytecode Assembler
+by transalting the above code assembly code:
+
+    Constant pool:
+    0000: <FunctionSymbol: name='factorial', address=0, args=1, locals=3>
+    0001: 2
+    0002: 1
+    0003: <FunctionSymbol: name='main', address=95, args=0, locals=1>
+    0004: 3
+
+    Code memory:
+    0000:   6   0   0   0   2   0   0   0
+    0008:   1   4   0   0   0   3   0   0
+    0016:   0   1   0   0   0   2  13   0
+    0024:   0   0   3   0   0   0  41   6
+    0032:   0   0   0   0   0   0   0   2
+    0040:   9   6   0   0   0   2   0   0
+    0048:   0   2  14   0   0   0   3   0
+    0056:   0   0   1   2   0   0   0   1
+    0064:   0   0   0   1   0   0   0   2
+    0072:  16   0   0   0   0   0   0   0
+    0080:   1   3   0   0   0   0   0   0
+    0088:   0   3   0   0   0   0   9   6
+    0096:   0   0   0   1   0   0   0   4
+    0104:  16   0   0   0   0   0   0   0
+    0112:   1  15   0   0   0   0  10
+
+Bytecodes are described in the following section.
+
+
 Register-Based Bytecode Interpreter / Virtual Machine
 -----------------------------------------------------
 
