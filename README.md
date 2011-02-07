@@ -268,3 +268,58 @@ processed by [dot](http://www.graphviz.org/) program to draw nice graphs.
 
     $ echo -n 'foo(3)' | bin/gendot > funcall.dot
     $ dot -Tpng -o funcall.png funcall.dot
+
+
+Register-Based Bytecode Interpreter / Virtual Machine
+-----------------------------------------------------
+
+                                       |
+                               TinyPie | assembly
+                                       |
+                                      \|/
+                            +----------X------------+
+                            |                       |
+                            |  Bytecode Assembler   |
+                            |                       |
+                            +----------+------------+
+                                       |
+                code memory(bytecode)  |  constant pool
+                                      \|/
+    +----------------------------------x---------------------------------------+
+    |                                                                          |
+    |          Register-Based Bytecode Interpreter / Virtual Machine           |
+    |                                                                          |
+    | +------------------------+        +------------------------------------+ |
+    | |                        |        |       Function Call Stack          | |
+    | |     Constant Pool      +----+   |                                    | |
+    | |   (integer, string,    |    |   |                                    | |
+    | |    function symbol)    |    |   | +--------------------------------+ | |
+    | +------------------------+    |   | |        Stack Frame             | | |
+    |                               |   | |                                | | |
+    |                               |   | |function symbol: FS('main')     | | |
+    |                               |   | |return address:  0              | | |
+    | +------------------------+    |   | |          ret| args|locals      | | |
+    | |                        |    |   | |registers: r0|r1 r2|r3 r4 r5    | | |
+    | |  Global data memory    |    |   | +--------------------------------+ | |
+    | |                        +-|  |   |                                    | |
+    | |                        | |  |   |                                    | |
+    | +------------------------+ |  |   | +--------------------------------+ | |
+    |                            |  |   | |        Stack Frame             | | |
+    |                            |  |   | |                                | | |
+    |                            |  |   | |function symbol: FS('fact')     | | |
+    | +------------------------+ |  |   | |return address: 17              | | |
+    | |                        | |  |   | |          ret| args   |locals   | | |
+    | |    Code memory         | |  |   | |registers: r0|r1 r2 r3|r4       | | |
+    | |    (bytecode)          | |  |   | +--------------------------------+ | |
+    | |                        | |  |   |                                    | |
+    | +----------+-------------+ |  |   |                                    | |
+    |            |               |  |   +------------------------------------+ |
+    |           \|/              |  |                                          |
+    + +----------X-------------+ |  |                                          |
+    | |                        |/|  |                                          |
+    | |         CPU            X-+  |                                          |
+    | | (fetch-decode-execute) |\   |                                          |
+    | |                        |/   |                                          |
+    | +------------------------X----+                                          |
+    |                           \                                              |
+    +--------------------------------------------------------------------------+
