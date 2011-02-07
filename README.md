@@ -367,11 +367,44 @@ by translating the above code assembly code:
     0104:  16   0   0   0   0   0   0   0
     0112:   1  15   0   0   0   0  10
 
-Bytecodes are described in the following section.
+Bytecode instrcution are described in the following section.
 
 
 Register-Based Bytecode Interpreter / Virtual Machine
 -----------------------------------------------------
+
+Virtual Machine architecture:
+
+1. **IP**: Instruction pointer register that points into the *code memory*
+   at the next instruction to execute.
+
+2. **CPU**: Instruction dispatcher that simulates *fetch-decode-execute*
+   cycle with a *switch* (if elif) statement in a loop - reads bytecode
+   at IP, decodes its operands and executes corresponding operation.
+
+3. **Global data memory**: a list of global objects. Contents is
+   accessed via integer index.
+
+4. **Code memory**: Holds bytecode instructions and their operands.
+
+5. **Call stack**: Holds StackFrame objects with function return address,
+   parameters, and local variables.
+
+6. **Stack frame**: A StackFrame object that holds all required information
+   to invoke a function:
+   - function symbol
+   - function return address
+   - registers hold return value, arguments, locals, and temporary values
+
+7. **FP**: Frame pointer - a special-purpose register that points to
+   the top of the function `call stack`
+
+8. **Constant pool**: Integers, strings, and function symbols all go into
+   constant pool. Instructions refer to constant pool values via an integer
+   index.
+
+
+High-level overview:
 
                                        |
                                TinyPie | assembly
@@ -423,3 +456,137 @@ Register-Based Bytecode Interpreter / Virtual Machine
     | +------------------------X----+                                          |
     |                           \                                              |
     +--------------------------------------------------------------------------+
+
+
+Bytecode instructions for TinyPie VM:
+
+    # Index serves as an opcode
+    INSTRUCTIONS = [
+        None,
+        Instruction('add', REG, REG, REG),   # A B C  R(A) = R(B) + R(C)
+        Instruction('sub', REG, REG, REG),   # A B C  R(A) = R(B) - R(C)
+        Instruction('mul', REG, REG, REG),   # A B C  R(A) = R(B) * R(C)
+        Instruction('lt', REG, REG, REG),    # A B C  R(A) = R(B) < R(C)
+        Instruction('eq', REG, REG, REG),    # A B C  R(A) = R(B) == R(C)
+        Instruction('loadk', REG, POOL),     # A B    R(A) = CONST_POOL[B]
+        Instruction('gload', REG, POOL),     # A B    R(A) = GLOBALS[B]
+        Instruction('gstore', POOL, REG),    # A B    GLOBALS[A] = R(B)
+        Instruction('ret'),
+        Instruction('halt'),
+        Instruction('br', INT),              # A      branch to A
+        Instruction('brt', REG, INT),        # A B    R(A) is True -> branch to B
+        Instruction('brf', REG, INT),        # A B    R(A) is False -> branch to B
+        Instruction('move', REG, REG),       # A B    R(A) = R(B)
+        Instruction('print', REG),           # A      print R(A)
+        Instruction('call', FUNC, REG),      # A B    call A, R(B)
+        ]
+
+TinyPie VM comes with a `tpvm` command line utility:
+
+    $ bin/tpvm -h
+    Usage: tpvm [input file]
+
+    If no input file is provided STDIN is used by default.
+
+
+    Options:
+      -h, --help            show this help message and exit
+      -i FILE, --input=FILE
+                            Input file. Defaults to standard input.
+      -c, --coredump        Print coredump to standard output.
+      -d, --disasm          Print disassembled code to standard output.
+      -t, --trace           Print execution trace.
+
+Example output:
+
+    fact.tps
+    .def fact: args=1, locals=3
+        # r1 holds argument 'n'
+        loadk r2, 2
+        lt r3, r1, r2        # n < 2 ?
+        brf r3, cont         # if n >= 2 jump to 'cont'
+        loadk r0, 1          # else return 1
+        ret
+    cont:
+        loadk r2, 1          # r2 = 1
+        move r3, r1          # r3 = n
+        sub r1, r1, r2       # r1 = n - 1
+        call fact, r1        # fact(n - 1)
+        mul r0, r3, r0       # n = n * result of fact(n - 1)
+        ret
+
+    .def main: args=0, locals=1
+        loadk r1, 3
+        call fact, r1        # fact(3)
+        print r0             # 6
+        halt
+
+    $ bin/tpvm --coredump --disasm --trace -i /tmp/fact.tps
+    0095: LOADK   r1, #4:3         main.registers=[? | ?]              calls=[main]
+    0104: CALL    #0:fact@0, r1    main.registers=[? | 3]              calls=[main]
+    0000: LOADK   r2, #1:2         fact.registers=[? | 3 | ? ? ?]      calls=[main fact]
+    0009: LT      r3, r1, r2       fact.registers=[? | 3 | 2 ? ?]      calls=[main fact]
+    0022: BRF     r3, 41           fact.registers=[? | 3 | 2 0 ?]      calls=[main fact]
+    0041: LOADK   r2, #2:1         fact.registers=[? | 3 | 2 0 ?]      calls=[main fact]
+    0050: MOVE    r3, r1           fact.registers=[? | 3 | 1 0 ?]      calls=[main fact]
+    0059: SUB     r1, r1, r2       fact.registers=[? | 3 | 1 3 ?]      calls=[main fact]
+    0072: CALL    #0:fact@0, r1    fact.registers=[? | 2 | 1 3 ?]      calls=[main fact]
+    0000: LOADK   r2, #1:2         fact.registers=[? | 2 | ? ? ?]      calls=[main fact fact]
+    0009: LT      r3, r1, r2       fact.registers=[? | 2 | 2 ? ?]      calls=[main fact fact]
+    0022: BRF     r3, 41           fact.registers=[? | 2 | 2 0 ?]      calls=[main fact fact]
+    0041: LOADK   r2, #2:1         fact.registers=[? | 2 | 2 0 ?]      calls=[main fact fact]
+    0050: MOVE    r3, r1           fact.registers=[? | 2 | 1 0 ?]      calls=[main fact fact]
+    0059: SUB     r1, r1, r2       fact.registers=[? | 2 | 1 2 ?]      calls=[main fact fact]
+    0072: CALL    #0:fact@0, r1    fact.registers=[? | 1 | 1 2 ?]      calls=[main fact fact]
+    0000: LOADK   r2, #1:2         fact.registers=[? | 1 | ? ? ?]      calls=[main fact fact fact]
+    0009: LT      r3, r1, r2       fact.registers=[? | 1 | 2 ? ?]      calls=[main fact fact fact]
+    0022: BRF     r3, 41           fact.registers=[? | 1 | 2 1 ?]      calls=[main fact fact fact]
+    0031: LOADK   r0, #2:1         fact.registers=[? | 1 | 2 1 ?]      calls=[main fact fact fact]
+    0040: RET                      fact.registers=[1 | 1 | 2 1 ?]      calls=[main fact fact fact]
+    0081: MUL     r0, r3, r0       fact.registers=[1 | 1 | 1 2 ?]      calls=[main fact fact]
+    0094: RET                      fact.registers=[2 | 1 | 1 2 ?]      calls=[main fact fact]
+    0081: MUL     r0, r3, r0       fact.registers=[2 | 2 | 1 3 ?]      calls=[main fact]
+    0094: RET                      fact.registers=[6 | 2 | 1 3 ?]      calls=[main fact]
+    0113: PRINT   r0               main.registers=[6 | 3]              calls=[main]
+    6
+    Constant pool:
+    0000: <FunctionSymbol: name='fact', address=0, args=1, locals=3>
+    0001: 2
+    0002: 1
+    0003: <FunctionSymbol: name='main', address=95, args=0, locals=1>
+    0004: 3
+
+    Code memory:
+    0000:   6   0   0   0   2   0   0   0
+    0008:   1   4   0   0   0   3   0   0
+    0016:   0   1   0   0   0   2  13   0
+    0024:   0   0   3   0   0   0  41   6
+    0032:   0   0   0   0   0   0   0   2
+    0040:   9   6   0   0   0   2   0   0
+    0048:   0   2  14   0   0   0   3   0
+    0056:   0   0   1   2   0   0   0   1
+    0064:   0   0   0   1   0   0   0   2
+    0072:  16   0   0   0   0   0   0   0
+    0080:   1   3   0   0   0   0   0   0
+    0088:   0   3   0   0   0   0   9   6
+    0096:   0   0   0   1   0   0   0   4
+    0104:  16   0   0   0   0   0   0   0
+    0112:   1  15   0   0   0   0  10
+
+    Disassembly:
+    0000: LOADK   r2, #1:2
+    0009: LT      r3, r1, r2
+    0022: BRF     r3, 41
+    0031: LOADK   r0, #2:1
+    0040: RET
+    0041: LOADK   r2, #2:1
+    0050: MOVE    r3, r1
+    0059: SUB     r1, r1, r2
+    0072: CALL    #0:fact@0, r1
+    0081: MUL     r0, r3, r0
+    0094: RET
+    0095: LOADK   r1, #4:3
+    0104: CALL    #0:fact@0, r1
+    0113: PRINT   r0
+    0118: HALT
+
