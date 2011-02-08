@@ -12,6 +12,7 @@ It's based on Pie language from [Language Implementation Patterns](http://pragpr
 Quote from [the book](http://pragprog.com/titles/tpdsl/language-implementation-patterns): "A tree-based interpreter is like a compiler front
 end with an interpreter grafted onto the end instead of a code generator"
 
+TinyPie also includes Bytecode Assembler and Register-Based Virtual Machine.
 
 Goals of the project
 --------------------
