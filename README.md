@@ -1,5 +1,5 @@
-TinyPie - Tree-Based Interpreter for TinyPie language
-=====================================================
+TinyPie - Tree-Based Interpreter, Compiler, and VM for TinyPie language
+=======================================================================
 
 Overview
 --------
