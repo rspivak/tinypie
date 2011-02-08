@@ -85,6 +85,8 @@ class FunctionSymbol(object):
 #              | ID operand ',' operand NL
 #              | ID operand ',' operand NL ',' operand NL
 #              | 'call' operand
+#              | 'call' ID ',' operand NL
+#              | 'loadk' REG ',' (INT | STRING) NL
 # operand -> REG | ID | STRING | INT
 
 class BytecodeAssembler(BaseParser):
