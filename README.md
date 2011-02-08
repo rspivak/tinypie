@@ -342,7 +342,7 @@ Here is an equivalent TinyPie assembly code:
         halt
 
 Here are the resulting elements produced by the Bytecode Assembler
-by translating the above code assembly code:
+by translating the above assembly code:
 
     Constant pool:
     0000: <FunctionSymbol: name='factorial', address=0, args=1, locals=3>
@@ -368,7 +368,7 @@ by translating the above code assembly code:
     0104:  16   0   0   0   0   0   0   0
     0112:   1  15   0   0   0   0  10
 
-Bytecode instrcution are described in the following section.
+Bytecode instructions are described in the following section.
 
 
 Register-Based Bytecode Interpreter / Virtual Machine
