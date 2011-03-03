@@ -18,7 +18,7 @@ setup(
     version='0.2',
     url='http://github.com/rspivak/tinypie',
     license='MIT',
-    description='Tree-Based Interpreter for a simple TinyPie language',
+    description='Tree-Based Interpreter, Compiler and VM for TinyPie language',
     author='Ruslan Spivak',
     author_email='ruslan.spivak@gmail.com',
     packages=find_packages('src'),
@@ -32,6 +32,7 @@ setup(
     gendot = tinypie.astviz:generate_dot
     """,
     classifiers=filter(None, classifiers.split('\n')),
-    long_description=read('README.md') + '\n\n' + read('CHANGES.txt')
+    long_description=read('README.md') + '\n\n' + read('CHANGES.txt'),
+    include_package_data=True,
     extras_require={'test': ['Jinja2']}
     )
