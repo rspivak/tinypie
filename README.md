@@ -592,3 +592,10 @@ Example output:
     0113: PRINT   r0
     0118: HALT
 
+
+Roadmap
+-------
+
+- AST -> TAC (Three-Address Code)
+- TAC -> Bytecode Assembly
+- VM in C/C++ (here we go, the joy of manual memory management)
