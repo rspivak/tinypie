@@ -52,10 +52,7 @@ def p_program(p):
     p[0] = PrintNode(p[2])
 
 def p_error(p):
-    if p:
-        print "Syntax error at '%s'" % p.value
-    else:
-        print 'Syntax error at EOF'
+    print "Syntax error at '%s'" % t.value
 
 # AST
 class PrintNode(object):
