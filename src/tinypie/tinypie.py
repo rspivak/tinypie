@@ -57,6 +57,7 @@ def p_error(p):
     else:
         print 'Syntax error at EOF'
 
+# AST
 class PrintNode(object):
     def __init__(self, value):
         self.value = value
@@ -77,6 +78,7 @@ class NodeVisitor(object):
        for child in node.children():
            self.visit(child)
 
+# Start the parser
 lex.lex()
 yacc.yacc()
 visitor = NodeVisitor()
