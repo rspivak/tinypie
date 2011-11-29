@@ -27,8 +27,11 @@ __author__ = 'Ruslan Spivak <ruslan.spivak@gmail.com>'
 import ply.lex as lex
 import ply.yacc as yacc
 
+# Grammar
+# program -> PRINT INT
 
-tokens = ['INT', 'PRINT']
+
+tokens = ['PRINT', 'INT']
 
 # Tokens
 def t_INT(t):
