@@ -24,33 +24,35 @@
 
 __author__ = 'Ruslan Spivak <ruslan.spivak@gmail.com>'
 
+import sys
+
 import ply.lex as lex
 import ply.yacc as yacc
 
-# Example:
-# tinypie > x = 7
-# tinypie > print x
-# tinypie > print 5
-#
 # Grammar
-# program   -> (statement)+
-# statement -> print
-#            | assign
-# print     -> PRINT INT
-#            | PRINT ID
-# assign    -> ID '=' INT
+# program             -> source_element_list
+#
+# source_element_list -> statement
+#                      | source_element_list statement
+#
+# statement           -> print NL
+#                      | assign NL
+#
+# print               -> PRINT INT
+#                      | PRINT ID
+#
+# assign              -> ID '=' INT
 
 # Symbol table / Monolithic scope / Global scope
-NAMES = {}
+names = {}
+# Reserved ids
+keywords = {'print': 'PRINT'}
 
-tokens = ['PRINT', 'ID', 'INT']
-
+tokens = ['ID', 'INT', 'NL'] + keywords.values()
 literals = ['=']
 
 # Tokens
-def t_PRINT(t):
-    r"""print"""
-    return t
+t_ignore = ' \t'
 
 digit = r'([0-9])'
 nondigit = r'([_A-Za-z])'
@@ -58,6 +60,7 @@ identifier = r'(' + nondigit + r'(' + digit + r'|' + nondigit + r')*)'
 
 @lex.TOKEN(identifier)
 def t_ID(t):
+    t.type = keywords.get(t.value, 'ID')
     return t
 
 def t_INT(t):
@@ -65,7 +68,9 @@ def t_INT(t):
     t.value = int(t.value)
     return t
 
-t_ignore = ' \t'
+def t_NL(t):
+    r"""\n+"""
+    return t
 
 def t_error(t):
     print "Illegal character '%s'" % t.value[0]
@@ -73,12 +78,22 @@ def t_error(t):
 
 # Parsing rules
 def p_program(p):
-    """program : statement"""
-    p[0] = p[1]
+    """program : source_element_list"""
+    p[0] = ProgramNode(p[1])
+
+def p_source_element_list(p):
+    """source_element_list : statement
+                           | source_element_list statement
+    """
+    if len(p) == 2: # single source element
+        p[0] = [p[1]]
+    else:
+        p[1].append(p[2])
+        p[0] = p[1]
 
 def p_statement(p):
-    """statement : print
-                 | assign
+    """statement : print NL
+                 | assign NL
     """
     p[0] = p[1]
 
@@ -91,16 +106,25 @@ def p_print(p):
 def p_assign(p):
     """assign : ID '=' INT"""
     left, right = p[1], p[3]
-    NAMES[left] = right
+    names[left] = right
 
 def p_error(p):
     print "Syntax error at '%s'" % p.value
 
-# AST
+# AST nodes
 class PrintNode(object):
     def __init__(self, value):
         self.value = value
+    def children(self):
+        return []
 
+class ProgramNode(object):
+    def __init__(self, statements):
+        self.statements = statements
+    def children(self):
+        return self.statements
+
+# AST tree walker
 class NodeVisitor(object):
     def visit(self, node):
         method = 'visit_%s' % node.__class__.__name__
@@ -111,24 +135,35 @@ class NodeVisitor(object):
 
     def visit_PrintNode(self, node):
         value = node.value
-        if value in NAMES:
-            print NAMES[value] # print x
+        if value in names:
+            print names[value] # print x
         elif isinstance(value, int):
             print value        # print 5
         else:
             print 'Could not resolve the symbol: %s' % value
 
-# Start the parser
-lex.lex()
-yacc.yacc()
-visitor = NodeVisitor()
+    def visit_ProgramNode(self, node):
+        for child in node.children():
+            self.visit(child)
 
-while True:
-    try:
-        line = raw_input('tinypie > ')
-    except EOFError:
-        break
-    if not line:
-        continue
-    tree = yacc.parse(line)
+def main(text):
+    """Usage:
+
+    $ cat << EOF | python tinypie2.py
+    > print x
+    > x = 7
+    > print 5
+    > EOF
+    7
+    5
+    """
+    # Start the parser
+    lex.lex()
+    yacc.yacc()
+    visitor = NodeVisitor()
+    #tree = yacc.parse(text, debug=True)
+    tree = yacc.parse(text)
     visitor.visit(tree)
+
+if __name__ == '__main__':
+    main(sys.stdin.read())
