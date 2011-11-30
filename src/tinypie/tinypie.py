@@ -36,16 +36,13 @@ import ply.yacc as yacc
 tokens = ['PRINT', 'INT']
 
 # Tokens
+t_ignore = ' \t'
+t_PRINT = r'print'
+
 def t_INT(t):
     r"""\d+"""
     t.value = int(t.value)
     return t
-
-def t_PRINT(t):
-    r"""print"""
-    return t
-
-t_ignore = ' \t'
 
 def t_error(t):
     print "Illegal character '%s'" % t.value[0]
