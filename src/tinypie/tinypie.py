@@ -55,15 +55,12 @@ def p_program(p):
     p[0] = PrintNode(p[2])
 
 def p_error(p):
-    print "Syntax error at '%s'" % t.value
+    print "Syntax error at '%s'" % p.value
 
 # AST
 class PrintNode(object):
     def __init__(self, value):
         self.value = value
-
-    def children(self):
-        return []
 
 class NodeVisitor(object):
     def visit(self, node):
@@ -74,9 +71,7 @@ class NodeVisitor(object):
         return 'GEN: %r' % node
 
     def visit_PrintNode(self, node):
-       print node.value
-       for child in node.children():
-           self.visit(child)
+        print node.value
 
 # Start the parser
 lex.lex()
