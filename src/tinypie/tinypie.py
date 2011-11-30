@@ -56,11 +56,12 @@ def p_program(p):
 def p_error(p):
     print "Syntax error at '%s'" % p.value
 
-# AST
+# AST nodes
 class PrintNode(object):
     def __init__(self, value):
         self.value = value
 
+# AST tree walker
 class NodeVisitor(object):
     def visit(self, node):
         method = 'visit_%s' % node.__class__.__name__
