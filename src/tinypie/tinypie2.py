@@ -94,7 +94,7 @@ def p_assign(p):
     NAMES[left] = right
 
 def p_error(p):
-    print "Syntax error at '%s'" % t.value
+    print "Syntax error at '%s'" % p.value
 
 # AST
 class PrintNode(object):
