@@ -27,20 +27,42 @@ __author__ = 'Ruslan Spivak <ruslan.spivak@gmail.com>'
 import ply.lex as lex
 import ply.yacc as yacc
 
+# Example:
+# tinypie > x = 7
+# tinypie > print x
+# tinypie > print 5
+#
 # Grammar
-# program -> PRINT INT
+# program   -> (statement)+
+# statement -> print
+#            | assign
+# print     -> PRINT INT
+#            | PRINT ID
+# assign    -> ID '=' INT
 
+# Symbol table / Monolithic scope / Global scope
+NAMES = {}
 
-tokens = ['PRINT', 'INT']
+tokens = ['PRINT', 'ID', 'INT']
+
+literals = ['=']
 
 # Tokens
+def t_PRINT(t):
+    r"""print"""
+    return t
+
+digit = r'([0-9])'
+nondigit = r'([_A-Za-z])'
+identifier = r'(' + nondigit + r'(' + digit + r'|' + nondigit + r')*)'
+
+@lex.TOKEN(identifier)
+def t_ID(t):
+    return t
+
 def t_INT(t):
     r"""\d+"""
     t.value = int(t.value)
-    return t
-
-def t_PRINT(t):
-    r"""print"""
     return t
 
 t_ignore = ' \t'
@@ -51,8 +73,25 @@ def t_error(t):
 
 # Parsing rules
 def p_program(p):
-    """program : PRINT INT"""
+    """program : statement"""
+    p[0] = p[1]
+
+def p_statement(p):
+    """statement : print
+                 | assign
+    """
+    p[0] = p[1]
+
+def p_print(p):
+    """print : PRINT ID
+             | PRINT INT
+    """
     p[0] = PrintNode(p[2])
+
+def p_assign(p):
+    """assign : ID '=' INT"""
+    left, right = p[1], p[3]
+    NAMES[left] = right
 
 def p_error(p):
     print "Syntax error at '%s'" % t.value
@@ -61,9 +100,6 @@ def p_error(p):
 class PrintNode(object):
     def __init__(self, value):
         self.value = value
-
-    def children(self):
-        return []
 
 class NodeVisitor(object):
     def visit(self, node):
@@ -74,9 +110,13 @@ class NodeVisitor(object):
         return 'GEN: %r' % node
 
     def visit_PrintNode(self, node):
-       print node.value
-       for child in node.children():
-           self.visit(child)
+        value = node.value
+        if value in NAMES:
+            print NAMES[value] # print x
+        elif isinstance(value, int):
+            print value        # print 5
+        else:
+            print 'Could not resolve the symbol: %s' % value
 
 # Start the parser
 lex.lex()
