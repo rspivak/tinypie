@@ -161,7 +161,6 @@ def main(text):
     lex.lex()
     yacc.yacc()
     visitor = NodeVisitor()
-    #tree = yacc.parse(text, debug=True)
     tree = yacc.parse(text)
     visitor.visit(tree)
 
